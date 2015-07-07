@@ -310,7 +310,7 @@ void verify_status(void)
 		lcd_put_p(EMP);
 		return;
 	}
-	else if(diskII_disable())
+	else if(diskII_disable() && (enter_is_pressed() || down_is_pressed()))
 	{
 		if(enter_is_pressed())  // drive disabled
 		{
@@ -321,6 +321,7 @@ void verify_status(void)
 				while (enter_is_pressed());  // enter button pushed !
 				cli();
 				select_nic();
+				if(SD_ejected()) return;
 				if (inited)
 				{
 					TIMSK0 |= (1<<TOIE0);
@@ -339,6 +340,7 @@ void verify_status(void)
 				while (down_is_pressed());  // enter button pushed !
 				cli();
 				set_speed();
+				if(SD_ejected()) return;
 				find_previous_nic();
 				if (inited)
 				{
