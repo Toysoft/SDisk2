@@ -444,6 +444,7 @@ void select_nic()
 	nfiles = 0;
 	buffer = &writeData[0][0];
 	files_id = &writeData[2][0];
+	lastBlockRead = -1;
 	buffClear();
 	
 	lcd_gotoxy(0,0);
@@ -548,8 +549,8 @@ void select_nic()
 void find_previous_nic()
 {
 	buffer = &writeData[0][0];
-	buffClear();
-	lastBlockRead = 0;
+	//buffClear();
+	lastBlockRead = -1;
 	cd(0);
 	int firstNic = -1;
 	id_of_config_file = -1;
@@ -590,7 +591,9 @@ void find_previous_nic()
 							firstNic = tmp;
 							break;
 						}
+						else cd(0);
 					}		
+					else cd(0);
 				}	
 				// If it gets here the config file does not point to a valid NIC. Get back to the root directory and keep going
 				cd(0);	
@@ -701,13 +704,14 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	unsigned long current_dir = FAT_sectorOfCurrentDirectory;
 	
 	// if there is no config file, create one
-	cd(0);
+	
 	//if(id_of_config_file==-1) create_config_file();
 	
 	// save only if there is a config file
 	if(id_of_config_file!=-1)
 	{
-		lastBlockRead = 0;
+		cd(0);
+		lastBlockRead = -1;
 		struct dir_Structure* config_file = getFile(id_of_config_file);
 		
 		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;

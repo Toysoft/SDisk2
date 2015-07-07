@@ -229,7 +229,6 @@ unsigned char cd(struct dir_Structure* dir)
 
 struct dir_Structure* validFile(struct dir_Structure* file)
 {
-	
 	if(!file) return 0;
 	if(file->name[0] == 0x00) return 0;
 	if(file->name[0] == 0xE5) return 0;
