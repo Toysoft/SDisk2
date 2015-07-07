@@ -60,6 +60,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define SD_RAW_SPEC_2 1
 #define SD_RAW_SPEC_SDHC 2
 
+#define SD_MIN_SPEED 1
+#define SD_MAX_SPEED 10
+
 //SD commands, many of these are not used here
 #define GO_IDLE_STATE            0
 #define SEND_OP_COND             1
@@ -85,7 +88,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define SD_unselect_card()       /*set_bit(SD_PORT,SD_CS)*/
 
 extern unsigned long lastBlockRead;
-extern unsigned char SD_version, SDHC_flag, *buffer;
+extern unsigned char SD_version, SDHC_flag, *buffer, SD_speed;
 
 
 unsigned char SD_init(void);

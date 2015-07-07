@@ -47,12 +47,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "SD_routines.h"
 
 unsigned long lastBlockRead;
-unsigned char SD_version, SDHC_flag,  *buffer;
+unsigned char SD_version, SDHC_flag,  *buffer, SD_speed;
 
 unsigned char SD_init(void)
 {
 	unsigned char i, response;
 	unsigned int retry = 0 ;
+	SD_speed = 5;
 	
 	SPI_init();
 	SPI_slow();
@@ -160,20 +161,22 @@ void SD_cmdFast(unsigned char cmd, unsigned long adr)
 	SPI_send_byte_fast(0x95);
 	SPI_send_byte_fast(0xff);
 	
-	do { nop(); } while (((res=SD_getRespFast()) != 0) && (res != 0xff));
+	do { /*nop();*/ } while (((res=SD_getRespFast()) != 0) && (res != 0xff));
 }
 
 void SD_CMD17Special(unsigned long adr)
 {
 	unsigned char ch;
+	unsigned char count = SD_speed;
 	SD_cmdFast(READ_SINGLE_BLOCK, adr);
-	do 
+	do
 	{
-		ch = SPI_read_byte_fast();	
-		nop(); nop(); nop(); nop();  nop();
+		ch = SPI_read_byte_fast();
+		//nop(); nop(); nop(); nop();  nop();
 		//if (SD_ejected()) return;
-	} 
-	while (ch != 0xfe);
+		for(count = SD_speed; count>0; count --){}
+	}
+	while(ch!=0xfe);
 }
 
 unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg)

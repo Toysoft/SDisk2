@@ -150,8 +150,42 @@ unsigned long getNextCluster(unsigned long clusterNumber)
 	return ((*FATEntryValue) & mask);
 	
 }
-
+unsigned long allocEmptyCluster()
+{
+	unsigned int  FATEntryOffset;
+	unsigned long FATEntrySector;
+	unsigned long *FATEntryValue;
+	unsigned char retry = 0;
+	unsigned char offset = 2;
+	
+	unsigned long clusterNumber = 1000;
+	while(getNextCluster(clusterNumber)!=0 && clusterNumber < 100000) clusterNumber++;
+	if(clusterNumber==100000) return 0;
+	
+	if(FAT_partitionType == PARTITION_TYPE_FAT16) offset = 1;
+	
+	FATEntrySector = FAT_offset + ((clusterNumber << offset) / FAT_bytesPerSector) ;
+	FATEntryOffset = (unsigned int) ((clusterNumber << offset) % FAT_bytesPerSector);
+	while(retry <10) { if(!SD_readSingleBlock(FATEntrySector)) break; retry++;}
+		
+	FATEntryValue = (unsigned long *) &buffer[FATEntryOffset];
+	
+	*FATEntryValue = 0xFF;	
+	*FATEntryValue = 0xFF;
+	if(FAT_partitionType == PARTITION_TYPE_FAT32)
+	{
+		*FATEntryValue = 0xFF;
+		*FATEntryValue = 0xFF;
+	}
+	SD_writeSingleBlock(FATEntrySector);
+		
+	return clusterNumber;	
+}
 struct dir_Structure* getFile(unsigned int index)
+{
+	return validFile(anyFile(index));
+}
+struct dir_Structure* anyFile(unsigned int index)
 {
 	unsigned long cluster, firstSector;
 	unsigned int  bytePos      = index*FAT_BYTESPERFILE;
@@ -172,7 +206,7 @@ struct dir_Structure* getFile(unsigned int index)
 	sectorShift = sectorShift - clusterShift*FAT_sectorsPerCluster;
 	
 	SD_readSingleBlock (firstSector + sectorShift);
-	return validFile((struct dir_Structure *) &buffer[byteShift]);
+	return (struct dir_Structure *) &buffer[byteShift];
 }
 
 unsigned char cd(struct dir_Structure* dir)
@@ -204,7 +238,6 @@ struct dir_Structure* validFile(struct dir_Structure* file)
 	if(file->attrib == 0x1e) return 0;
 	if(file->attrib == 0x0f) return 0;
 	if(file->attrib == 0x28) return 0;
-	if(file->attrib == 0) return 0;
 	//if(file->firstClusterHI==0 && file->firstClusterLO==0) return 0;
 	//if((file->attrib == 0x10) || (file->attrib == 0x08)) return 0;
 	return file;

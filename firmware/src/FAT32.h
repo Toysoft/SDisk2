@@ -134,9 +134,11 @@ extern unsigned char    FAT_sectorsPerClusterBitShift;
 
 unsigned char           FAT_init(void);
 struct dir_Structure*   getFile(unsigned int index);
+struct dir_Structure*   anyFile(unsigned int index);
 struct dir_Structure*   validFile(struct dir_Structure* file);
 unsigned char           cd(struct dir_Structure* dir);
 unsigned long           getNextCluster(unsigned long clusterNumber);
+unsigned long           allocEmptyCluster();
 
 inline unsigned long    getSector(unsigned long cluster) { return (((cluster-2)*FAT_sectorsPerCluster)+FAT_firstDataSector);}
 inline unsigned long    getCluster(unsigned long sector) { return (sector-FAT_firstDataSector)/FAT_sectorsPerCluster + 2; }

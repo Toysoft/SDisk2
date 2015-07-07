@@ -69,6 +69,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define up_is_pressed()    bit_is_clear(UP_PORT,UP_BIT)
 #define diskII_disable()   bit_is_set(DISKII_PIN,DISKII_ENABLE)
 
+#define CHECKSUM_CONFIG 0X01AB02CD
+struct Sdisk_config_structure
+{
+	unsigned long checksum;
+	unsigned char sd_card_speed;
+	unsigned long directory_of_last_mounted_nic;
+	unsigned int  id_of_last_mounted_nic;
+};
+
 void            init(char splash);
 void            init_sd(char splash);
 void            verify_status();
@@ -77,11 +86,13 @@ void            find_previous_nic();
 unsigned char   is_a_nic(struct dir_Structure *file);
 unsigned char   is_a_dir(struct dir_Structure *file);
 unsigned int    mount_nic_image(int file_id, struct dir_Structure* file);
+void            create_config_file();
 void            writeBackSub();
 void            writeBackSub2(unsigned char bn, unsigned char sc, unsigned char track);
 void            writeBack();
 void            cancelRead();
 void            buffClear();
+void            set_speed();
 int             main(void);
 
 #endif

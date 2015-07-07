@@ -53,7 +53,7 @@ unsigned char *writePtr;
 int *files_id;
 int nfiles  = 0;
 int selected_file_id = 0;
-unsigned long selected_directory_FAT_block = 0;
+int id_of_config_file = -1;
 
 #define FAT_NIC_ELEMS 10
 #define NIC_FILE_SIZE 280
@@ -95,7 +95,11 @@ PROGMEM const char PART[] = "Partition: ";
 PROGMEM const char FAT3[] = "FAT32";
 PROGMEM const char FAT1[] = "FAT16";
 PROGMEM const char ERR[]  = "ERROR: ";
+PROGMEM const char SPE0[]  = "SD speed: ";
+PROGMEM const char SPE1[]  = "Select speed   ";
 PROGMEM const char EMP[]  = "                ";
+
+PROGMEM const char CFG[]  = "SDISKII CFG";
 
 // a table for head stepper motor movement
 PROGMEM const prog_uchar stepper_table[4] = {0x0f,0xed,0x03,0x21};
@@ -164,6 +168,7 @@ int main(void)
 }
 void init_sd(char splash)
 {
+	id_of_config_file = -1;
 	SPI_slow();
 	SD_select_card();
 	unsigned char ok;
@@ -239,7 +244,7 @@ void init_sd(char splash)
 		lcd_put_p(PART);
 		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
 		else lcd_put_p(FAT1);
-		_delay_ms(600);
+		_delay_ms(400);
 		SD_select_card();
 	}
 	
@@ -285,7 +290,7 @@ void init(char splash)
 		lcd_put_p(MSG1);
 		lcd_gotoxy(0,1);
 		lcd_put_p(MSG2);
-		_delay_ms(400);
+		_delay_ms(100);
 	}
 }
 
@@ -305,24 +310,45 @@ void verify_status(void)
 		lcd_put_p(EMP);
 		return;
 	}
-	else if(enter_is_pressed() && diskII_disable())  // drive disabled
+	else if(diskII_disable())
 	{
-		unsigned char flg = 1;
-		for (i = 0; i != 100; i++) if (!enter_is_pressed()) flg = 0;
-		if (flg)
+		if(enter_is_pressed())  // drive disabled
 		{
-			while (enter_is_pressed());  // enter button pushed !
-			cli();
-			//init_sd(0);
-			select_nic();
-			if (inited)
+			unsigned char flg = 1;
+			for (i = 0; i != 100; i++) if (!enter_is_pressed()) flg = 0;
+			if (flg)
 			{
-				TIMSK0 |= (1<<TOIE0);
-				EIMSK |= (1<<INT0);
+				while (enter_is_pressed());  // enter button pushed !
+				cli();
+				select_nic();
+				if (inited)
+				{
+					TIMSK0 |= (1<<TOIE0);
+					EIMSK |= (1<<INT0);
+				}
+				sei();
 			}
-			sei();
+			return;
 		}
-		return;
+		else if(down_is_pressed())
+		{
+			unsigned char flg = 1;
+			for (i = 0; i != 100; i++) if (!down_is_pressed()) flg = 0;
+			if (flg)
+			{
+				while (down_is_pressed());  // enter button pushed !
+				cli();
+				set_speed();
+				find_previous_nic();
+				if (inited)
+				{
+					TIMSK0 |= (1<<TOIE0);
+					EIMSK |= (1<<INT0);
+				}
+				sei();
+			}
+			return;
+		}
 	}
 	else if(!inited) // if not initialized
 	{
@@ -337,6 +363,77 @@ void verify_status(void)
 		}
 		sei();
 	}
+}
+void set_speed()
+{
+	lcd_clear();
+	lcd_gotoxy(0,0);
+	lcd_put_p(SPE1);
+	lcd_gotoxy(0,1);
+	lcd_put_p(SPE0);
+	lcd_put_i(SD_speed);
+	unsigned char old_speed = SD_speed;
+	unsigned char original_speed = SD_speed;
+	while(1)
+	{
+		if(SD_speed!=old_speed)
+		{
+			lcd_gotoxy(0,1);
+			lcd_put_p(SPE0);
+			lcd_put_i(SD_speed);
+			lcd_put_p(PSTR(" "));
+			old_speed = SD_speed;
+		}
+		
+		if(SD_ejected()) return; // card is removed
+		if(down_is_pressed())
+		{
+			while(down_is_pressed()){}
+			_delay_ms(200);
+			
+			SD_speed--;
+			if(SD_speed<SD_MIN_SPEED) SD_speed = SD_MAX_SPEED;
+		}
+		if(up_is_pressed())
+		{
+			while(up_is_pressed()){}
+			_delay_ms(200);
+			
+			SD_speed++;
+			if(SD_speed>SD_MAX_SPEED) SD_speed = SD_MIN_SPEED;
+		}
+		if(enter_is_pressed())
+		{
+			while(enter_is_pressed()){}
+			_delay_ms(200);
+			if(SD_speed != original_speed)
+			{
+				if(id_of_config_file!=-1)
+				{
+					cd(0);
+					buffer = &writeData[0][0];
+					buffClear();
+					lastBlockRead = 0;
+					struct dir_Structure* config_file = getFile(id_of_config_file);
+					unsigned long cluster;
+					
+					if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
+					else cluster = (unsigned long)config_file->firstClusterLO;
+					
+					SD_readSingleBlock(getSector(cluster));
+					struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+					if(config->checksum == CHECKSUM_CONFIG)
+					{
+						config->sd_card_speed = SD_speed;
+						SD_writeSingleBlock(getSector(cluster));
+					}
+				}
+				
+			}
+			return;
+		}
+	}
+	return;
 }
 void select_nic()
 {
@@ -355,6 +452,7 @@ void select_nic()
 	do
 	{
 		struct dir_Structure *file = getFile(i);
+		if(file) if(file->name[0]== 0x00) break; // last file on directory
 		if(is_a_nic(file) || is_a_dir(file))
 		{
 			files_id[nfiles] = i;
@@ -449,36 +547,119 @@ void find_previous_nic()
 {
 	buffer = &writeData[0][0];
 	buffClear();
+	lastBlockRead = 0;
+	cd(0);
+	int firstNic = -1;
+	id_of_config_file = -1;
 	int i = 0;
 	do
 	{
 		struct dir_Structure *file = getFile(i);
-		if(is_a_nic(file))
+		if(file) 
 		{
-			mount_nic_image(i,file);
-			return;
+			if(file->name[0]== 0x00) break; // last file on directory
+			
+			// save pointer of first NIC found, just in case the config file is not found
+			if(is_a_nic(file) && firstNic == -1) 
+			{
+				firstNic = i;
+			}
+			
+			// found the config file with information on card speed and last NIC mounted
+			if(strncmp_P((char*)file->name,CFG,11)==0) // found config file
+			{
+				id_of_config_file = i;
+				unsigned long cluster = 0;
+				if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)file->firstClusterHI<<16 | (unsigned long)file->firstClusterLO;
+				else cluster = (unsigned long)file->firstClusterLO;
+				SD_readSingleBlock(getSector(cluster));				
+				struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+				if(config->checksum==CHECKSUM_CONFIG)
+				{
+					SD_speed =config->sd_card_speed;
+					// set directory
+					FAT_sectorOfCurrentDirectory = config->directory_of_last_mounted_nic;
+					unsigned int tmp = config->id_of_last_mounted_nic;
+					file = getFile(tmp);
+					if(file)
+					{
+						if(is_a_nic(file))
+						{
+							firstNic = tmp;
+							break;
+						}
+					}		
+				}	
+				// If it gets here the config file does not point to a valid NIC. Get back to the root directory and keep going
+				cd(0);	
+				// breaks if there is a valid NIC
+				if(firstNic!=-1) break;	
+			}			
 		}
 		i++;
 		
 	} while (i<MAXFILES*2);
-	inited = 0;
+	
+	if(firstNic==-1) inited = 0;
+	else 
+	{
+		struct dir_Structure *file = getFile(firstNic);
+		mount_nic_image(firstNic,file);
+	}
 	return;
 }
 unsigned char is_a_nic(struct dir_Structure *file)
 {
 	if(!file) return 0;
+	if(file->name[0]== 0x00 || file->name[0]== 0xe5) return 0; //deleted or empty file
 	if(file->name[8]=='N' && file->name[9]=='I'  && file->name[10]=='C') return 1;
 	return 0;
 }
 unsigned char is_a_dir(struct dir_Structure *file)
 {
 	if(!file) return 0;
+	if(file->name[0]== 0x00 || file->name[0]== 0xe5) return 0; //deleted or empty file
 	if(file->attrib & 0x10) return 1;
 	return 0;
 }
+void create_config_file()
+{
+	id_of_config_file = -1;
+	// first allocate empty cluster for data. If returns 0 disk if full. In this case, exit
+	// just one cluster is enough for the config file
+	unsigned long cluster = allocEmptyCluster();
+
+	if(cluster == 0) return;
+	
+	// go to the root directory. It is up to the caller to save the current directory address
+	cd(0);
+	int i = 0;
+	do
+	{
+		struct dir_Structure *file = anyFile(i);
+		if(file)
+		{	
+			// get first deleted of first empty
+			if(((file->name[0] == 0xe5) || (file->name[0] == 0x00)) && (file->attrib != 0xf)  )
+			{
+				id_of_config_file = i;
+				strcpy_P((char*)file->name,CFG);  //copy name to the config file
+				file->attrib = 0x01;
+				file->firstClusterHI = (unsigned int)((cluster >> 16) & 0xFFFF);
+				file->firstClusterLO = (unsigned int)(cluster & 0xFFFF);
+				//save modified block back to SD card and exit
+				SD_writeSingleBlock(lastBlockRead);
+				break;
+			}
+		}
+		i++;
+		
+	} while (i<MAXFILES*2);
+	return;
+}
 unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 {
-	if(!file) return 0;
+	if(!file) return 0;	
 	
 	lcd_gotoxy(0,0);
 	lcd_put_p(MSG9);
@@ -488,7 +669,6 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	lcd_put_p(EMP);
 	
 	selected_file_id = file_id;
-	selected_directory_FAT_block = FAT_sectorOfCurrentDirectory;
 
 	unsigned long cluster = 0;
 	if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)file->firstClusterHI<<16 | (unsigned long)file->firstClusterLO;
@@ -512,19 +692,40 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 		}
 	}
 	
-	//////////////////////////////////////////////////////////
-	// this is only for debug of the code while it is not ready
+	//remover quando for criar arquivo de configuracao
+	
+	// now that all the information is stored, I need to update the configuration file
+	// first save the current directory point
+	unsigned long current_dir = FAT_sectorOfCurrentDirectory;
+	
+	// if there is no config file, create one
+	cd(0);
+	//if(id_of_config_file==-1) create_config_file();
+	
+	// save only if there is a config file
+	if(id_of_config_file!=-1)
+	{
+		lastBlockRead = 0;
+		struct dir_Structure* config_file = getFile(id_of_config_file);
+		
+		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
+		else cluster = (unsigned long)config_file->firstClusterLO;
+			
+		//SD_readSingleBlock(getSector(cluster));
+		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+		config->checksum = CHECKSUM_CONFIG;
+		config->directory_of_last_mounted_nic = current_dir;
+		config->id_of_last_mounted_nic = file_id;
+		config->sd_card_speed = SD_speed;
+		SD_writeSingleBlock(getSector(cluster));
+	}
+
+	// restore point to the current directory
+	FAT_sectorOfCurrentDirectory = current_dir;
+
 	lcd_gotoxy(0,1);
-	lcd_put_i(FAT_sectorsPerCluster);
-	lcd_put_s(" ");
-	lcd_put_i(n_fat_elements);
-	lcd_put_s(" ");
-	lcd_put_i(fatNic[0]);
-	lcd_put_s(" ");
-	lcd_put_i(fatNic[1]);
-	lcd_put_s(" ");
-	lcd_put_i(fatNic[2]);
-	//////////////////////////////////////////////////////////
+	lcd_put_p(SPE0);
+	lcd_put_i(SD_speed);
 
 	bitbyte = 0;
 	readPulse = 0;
