@@ -74,9 +74,10 @@ if you don't want to replace it, change the following to
 .global writeData
 .global writeBack
 .global writePtr
+.global SD_speed
 	
-.func wait1
-wait1:
+.func wait1_old
+wait1_old:
 	nop		; 1
 	nop		; 1
 	nop		; 1
@@ -90,6 +91,21 @@ wait1:
 .endif
 	ret		; 4
 .endfunc
+
+.func wait1
+wait1:
+	nop		; 1
+	nop		; 1
+	nop		; 1
+	nop		; 1
+    lds r18, SD_speed  ;2
+	W1_LOOP:
+	  dec r18    ;2
+	  brne W1_LOOP   ; 1/2
+	ret		; 4
+.endfunc
+
+
 
 /* Vetor timer0 overflow */
 .func __vector_16

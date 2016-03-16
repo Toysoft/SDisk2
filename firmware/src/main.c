@@ -71,6 +71,12 @@ unsigned char       protect;
 unsigned char       formatting;
 const unsigned char volume = 0xfe;
 
+unsigned char  trk;
+unsigned short long_sector;
+unsigned short long_cluster;
+unsigned long  ft;
+unsigned char  old_trk;
+
 /*Error codes
 1 - Can not put SD Card on idle state
 2 - Can not make SD Card initialization
@@ -79,25 +85,32 @@ const unsigned char volume = 0xfe;
 5 - Cluster size smaller than minimum to keep buffer
 */
 
-/*                           1234567890123456 */
-PROGMEM const char MSG1[] = "   SDISK2 LCD   ";
-PROGMEM const char MSG2[] = "Apple II-BR 2015";
-PROGMEM const char MSG3[] = "Can not init SD ";
-PROGMEM const char MSG4[] = "    SDHC card   ";
-PROGMEM const char MSG5[] = " Normal SD card ";
-PROGMEM const char MSG6[] = " No SD inserted ";
-PROGMEM const char MSG7[] = "Select NIC image";
-PROGMEM const char MSG8[] = " No image here! ";
-PROGMEM const char MSG9[] = "NIC: ";
-PROGMEM const char MSGC[] = "building list...";
-PROGMEM const char MSGD[] = "sorting list... ";
-PROGMEM const char PART[] = "Partition: ";
-PROGMEM const char FAT3[] = "FAT32";
-PROGMEM const char FAT1[] = "FAT16";
-PROGMEM const char ERR[]  = "ERROR: ";
-PROGMEM const char SPE0[]  = "SD speed: ";
-PROGMEM const char SPE1[]  = "Select speed   ";
-PROGMEM const char EMP[]  = "                ";
+/*                               1234567890123456 */
+PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.1";
+PROGMEM const char MSG2[]     = "  Apple II-BR   ";
+PROGMEM const char MSG3[]     = "Can not init SD ";
+PROGMEM const char MSG4[]     = "    SDHC card   ";
+PROGMEM const char MSG5[]     = " Normal SD card ";
+PROGMEM const char MSG6[]     = " No SD inserted ";
+PROGMEM const char MSG7[]     = "Select NIC image";
+PROGMEM const char MSG8[]     = " No image here! ";
+PROGMEM const char MSG9[]     = "NIC: ";
+PROGMEM const char MSGC[]     = "Building list...";
+PROGMEM const char MSGD[]     = "Sorting list... ";
+PROGMEM const char PART[]     = "Partition: ";
+PROGMEM const char FAT3[]     = "FAT32";
+PROGMEM const char FAT1[]     = "FAT16";
+PROGMEM const char SPE0[]     = "Delay: ";
+PROGMEM const char SPE1[]     = "Select delay:  ";
+PROGMEM const char TRAK[]     = "TR: ";
+PROGMEM const char EMP[]      = "                ";
+PROGMEM const char ERM1[]     = "SD idle ERROR   ";
+PROGMEM const char ERM2[]     = "SD init ERROR   ";
+PROGMEM const char ERM3[]     = "FAT init ERROR  ";
+PROGMEM const char ERM4[]     = "Partition ERROR ";
+PROGMEM const char ERM5[]     = "Clust size ERROR";
+
+PROGMEM const char* const ERM[]     = {EMP,ERM1,ERM2,ERM3,ERM4,ERM5};
 
 PROGMEM const char CFG[]  = "SDISKII CFG";
 
@@ -108,6 +121,7 @@ int main(void)
 {
 	static unsigned char oldStp = 0, stp;
 	init(1);
+	old_trk = 255;
 	while(1)
 	{
 		verify_status();
@@ -140,27 +154,33 @@ int main(void)
 				cli();
 				sector = ((sector + 1) & 0xf);
 				{
-					unsigned char  trk = (ph_track >> 2);
-					unsigned short long_sector = (unsigned short)trk*16 + sector;
-					unsigned short long_cluster = long_sector>>FAT_sectorsPerClusterBitShift;
-					unsigned long  ft = fatNic[long_cluster];
+					trk = (ph_track >> 2);
+					long_sector = (unsigned short)trk*16 + sector;
+					long_cluster = long_sector>>FAT_sectorsPerClusterBitShift;
+					ft = fatNic[long_cluster];
+					if(trk!=old_trk)
+					{
+						old_trk = trk;
+						lcd_gotoxy(10,1);
+						lcd_put_p(TRAK);
+						lcd_put_i((unsigned int)trk);
+						lcd_put_s(" ");
+					}
 					
-					if (((sectors[0]==sector)&&(tracks[0]==trk)) ||
-					((sectors[1]==sector)&&(tracks[1]==trk)) ||
-					((sectors[2]==sector)&&(tracks[2]==trk)) ||
-					((sectors[3]==sector)&&(tracks[3]==trk)) ||
-					((sectors[4]==sector)&&(tracks[4]==trk))
-					) writeBackSub();
-					
-					bitbyte = 0;
-					prepare = 0;
+					if (((sectors[0]==sector)&&(tracks[0]==trk)) || ((sectors[1]==sector)&&(tracks[1]==trk)) ||
+					    ((sectors[2]==sector)&&(tracks[2]==trk)) || ((sectors[3]==sector)&&(tracks[3]==trk)) ||
+					    ((sectors[4]==sector)&&(tracks[4]==trk))
+					) writeBackSub();				
 					
 					// Timing is an issue here. This is the reason I copied explicitly the conversion from cluster to block
 					// instead of using getCluster() method. I also did bit shift instead of multiplications to make it faster.
 					// even inline function is not fast enough.
 					// SD_CMD17Special is also faster than the regular SD_sendCommand method.
 					SD_CMD17Special((((ft-2)<<FAT_sectorsPerClusterBitShift)+FAT_firstDataSector) + (long_sector&(FAT_sectorsPerCluster-1)));
+					bitbyte = 0;
+					prepare = 0;
 				}
+				
 				sei();
 			}
 		}
@@ -189,8 +209,7 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERR);
-		lcd_put_i((int)errorCode);
+		lcd_put_p(ERM[(int)errorCode]);
 		while(1)
 		{
 			inited = 0;
@@ -213,8 +232,7 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERR);
-		lcd_put_i((int)errorCode);
+		lcd_put_p(ERM[(int)errorCode]);
 		while(1)
 		{
 			inited = 0;
@@ -229,8 +247,7 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERR);
-		lcd_put_i((int)errorCode);
+		lcd_put_p(ERM[(int)errorCode]);
 		while(1)
 		{
 			inited = 0;
@@ -244,7 +261,7 @@ void init_sd(char splash)
 		lcd_put_p(PART);
 		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
 		else lcd_put_p(FAT1);
-		_delay_ms(400);
+		_delay_ms(500);
 		SD_select_card();
 	}
 	
@@ -290,7 +307,7 @@ void init(char splash)
 		lcd_put_p(MSG1);
 		lcd_gotoxy(0,1);
 		lcd_put_p(MSG2);
-		_delay_ms(100);
+		_delay_ms(200);
 	}
 }
 

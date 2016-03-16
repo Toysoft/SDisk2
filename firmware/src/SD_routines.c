@@ -48,6 +48,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 unsigned long lastBlockRead;
 unsigned char SD_version, SDHC_flag,  *buffer, SD_speed;
+unsigned char ch;
+unsigned char res;
+unsigned char count;
+unsigned char shift;
 
 unsigned char SD_init(void)
 {
@@ -63,6 +67,9 @@ unsigned char SD_init(void)
 	SD_select_card();
 	lastBlockRead = 9999;
 	for(i = 0; i < 200; ++i)  SPI_clock_pulse_slow();
+
+	SPI_transmit (0xff);
+	SPI_transmit (0xff);
 	
 	do
 	{
@@ -98,9 +105,9 @@ unsigned char SD_init(void)
 	do
 	{
 		response = SD_sendCommand(APP_CMD,0); //CMD55, must be sent before sending any ACMD command
-		_delay_ms(1);
+		//_delay_ms(2); //originalmente era 1
 		response = SD_sendCommand(SD_SEND_OP_COND,0x40000000); //ACMD41
-		_delay_ms(1);
+		//_delay_ms(2); //originalmente era 1
 		retry++;
 		if(retry>0x7fe)
 		{
@@ -114,9 +121,12 @@ unsigned char SD_init(void)
 	
 	retry = 0;
 	SDHC_flag = 0;
+	shift = 9;
 	
-	if (SD_version == 2)
+	if (SD_version == SD_RAW_SPEC_SDHC)
 	{
+		SDHC_flag = 1;
+		shift = 0;
 		do
 		{
 			response = SD_sendCommand(READ_OCR,0);
@@ -149,8 +159,8 @@ unsigned char SD_getRespFast(void)
 }
 void SD_cmdFast(unsigned char cmd, unsigned long adr)
 {
-	adr = ((SDHC_flag==0) ? adr << 9 : adr);
-	unsigned char res;
+	//adr = ((SDHC_flag==0) ? adr << 9 : adr);
+	adr = (adr << shift);
 	
 	SPI_send_byte_fast(0xff);
 	SPI_send_byte_fast(0x40 | cmd);
@@ -166,15 +176,15 @@ void SD_cmdFast(unsigned char cmd, unsigned long adr)
 
 void SD_CMD17Special(unsigned long adr)
 {
-	unsigned char ch;
-	unsigned char count = SD_speed;
+	//count = SD_speed;
+	for(count = SD_speed; count>0; count --){}	
 	SD_cmdFast(READ_SINGLE_BLOCK, adr);
 	do
-	{
+	{		
 		ch = SPI_read_byte_fast();
 		//nop(); nop(); nop(); nop();  nop();
 		//if (SD_ejected()) return;
-		for(count = SD_speed; count>0; count --){}
+		//for(count = SD_speed; count>0; count --){}		
 	}
 	while(ch!=0xfe);
 }
@@ -219,8 +229,9 @@ unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg)
 	if(response == 0x00 && cmd == 58)  //checking response of CMD58
 	{
 		status = SPI_receive() & 0x40;     //first byte of the OCR register (bit 31:24)
-		if(status == 0x40) SDHC_flag = 1;  //we need it to verify SDHC card
-		else SDHC_flag = 0;
+		shift = 0;
+		if(status == 0x40) {SDHC_flag = 1; shift = 0;}  //we need it to verify SDHC card
+		else { SDHC_flag = 0; shift = 9;}
 		
 		SPI_receive(); //remaining 3 bytes of the OCR register are ignored here
 		SPI_receive(); //one can use these bytes to check power supply limits of SD
@@ -241,12 +252,16 @@ unsigned char SD_readSingleBlock(unsigned long startBlock)
 	if(startBlock==lastBlockRead) return 1;
 	lastBlockRead = startBlock;
 	
+	SD_select_card();
+	SPI_transmit (0xff);
+	SPI_transmit (0xff);
+
 	response = SD_sendCommand(READ_SINGLE_BLOCK, startBlock); 
 	if(response != 0x00) return response; 
 	
-	SD_select_card();
+	//SD_select_card();
 	retry = 0;
-	while(SPI_receive() != 0xfe) if(retry++ > 0xfffe){SD_unselect_card(); return 0;} 
+	while(SPI_receive() != 0xfe) if(retry++ > 0xfffe) {SD_unselect_card(); return 0;} 
 	
 	for(i=0; i<512; i++)  buffer[i] = SPI_receive(); 
 	
