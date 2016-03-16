@@ -42,12 +42,12 @@ select a NIC file or a directory. Directories are shown around [ ].
 
 Only NIC files are supported.
 
-Selecting the speed of the SD card
+Selecting the delay of the SD card
 ==================================
 
 Standard SD and SDHC cards can differ by a large value in terms of speed. In order 
-to compensate it a little bit the user can set the speed of the card from 1 (fastest) 
-to 10 (slowest). The default value is 5 and it looks fine for the cards I testes. 
+to compensate it a little bit the user can set the delay of the card from 1 (small delays) 
+to 10 (long delays). The default value is 5 and it looks fine for the cards I testes. 
 If you get a lot of problems reading NIC file, try to change it a little. I noticed 
 that ProDOS images are more sensitive to this setting than DOS 3.3 images.
 
@@ -62,4 +62,18 @@ In order to save your configurations (SD card speed and last NIC mounted) you ne
 to copy the file SDISKII.CFG (provided here) in the root directory of your SD card. 
 If this file is not present every time you turn on the SDISKII the first found NIC 
 will be mounted and the speed of the SD card will be set to 5.
+
+Upgrading your SDISKII with this new firmware
+=============================================
+
+In order to upgrade your SDISKII with this new firmware you will need a chip programmer, such 
+as the MiniPro TL866CS. Remove the ATMEGA328P from your SDISKII, plug it in the programmer.
+Open the programmer software, load the firmware (sdisk2.hex). Check if the fuses are right.
+The values for the fuses are:
+
+   LFUSE = 0xDE
+   HFUSE = 0xD9
+   EFUSE = 0x07
+
+then program your ATMEGA328P with this new firmware. Put it back to the SDISKII and you are set.
 
