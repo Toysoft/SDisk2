@@ -86,9 +86,9 @@ unsigned char  old_trk;
 */
 
 /*                               1234567890123456 */
-PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.1";
+PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.2";
 PROGMEM const char MSG2[]     = "  Apple II-BR   ";
-PROGMEM const char MSG3[]     = "Can not init SD ";
+PROGMEM const char MSG3[]     = "ERROR on SD card";
 PROGMEM const char MSG4[]     = "    SDHC card   ";
 PROGMEM const char MSG5[]     = " Normal SD card ";
 PROGMEM const char MSG6[]     = " No SD inserted ";
@@ -110,7 +110,6 @@ PROGMEM const char ERM3[]     = "FAT init ERROR  ";
 PROGMEM const char ERM4[]     = "Partition ERROR ";
 PROGMEM const char ERM5[]     = "Clust size ERROR";
 
-PROGMEM const char* const ERM[]     = {EMP,ERM1,ERM2,ERM3,ERM4,ERM5};
 
 PROGMEM const char CFG[]  = "SDISKII CFG";
 
@@ -209,7 +208,10 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERM[(int)errorCode]);
+		if (errorCode==1) lcd_put_p(ERM1);
+		else if (errorCode==2) lcd_put_p(ERM2);
+		else if (errorCode==3) lcd_put_p(ERM3);
+		else if (errorCode==4) lcd_put_p(ERM4);
 		while(1)
 		{
 			inited = 0;
@@ -232,7 +234,10 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERM[(int)errorCode]);
+		if (errorCode==1) lcd_put_p(ERM1);
+		else if (errorCode==2) lcd_put_p(ERM2);
+		else if (errorCode==3) lcd_put_p(ERM3);
+		else if (errorCode==4) lcd_put_p(ERM4);
 		while(1)
 		{
 			inited = 0;
@@ -247,7 +252,7 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(MSG3);
 		lcd_gotoxy(0,1);
-		lcd_put_p(ERM[(int)errorCode]);
+		lcd_put_p(ERM5);
 		while(1)
 		{
 			inited = 0;
