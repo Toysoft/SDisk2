@@ -86,7 +86,7 @@ unsigned char  old_trk;
 */
 
 /*                               1234567890123456 */
-PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.2";
+PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.3";
 PROGMEM const char MSG2[]     = "  Apple II-BR   ";
 PROGMEM const char MSG3[]     = "ERROR on SD card";
 PROGMEM const char MSG4[]     = "    SDHC card   ";
@@ -104,11 +104,13 @@ PROGMEM const char SPE0[]     = "Delay: ";
 PROGMEM const char SPE1[]     = "Select delay:  ";
 PROGMEM const char TRAK[]     = "TR: ";
 PROGMEM const char EMP[]      = "                ";
-PROGMEM const char ERM1[]     = "SD idle ERROR   ";
-PROGMEM const char ERM2[]     = "SD init ERROR   ";
-PROGMEM const char ERM3[]     = "FAT init ERROR  ";
-PROGMEM const char ERM4[]     = "Partition ERROR ";
-PROGMEM const char ERM5[]     = "Clust size ERROR";
+PROGMEM const char ERM1[]     = "SD can not idle ";
+PROGMEM const char ERM2[]     = "SD can not init ";
+PROGMEM const char ERM3[]     = "Boot sec broken ";
+PROGMEM const char ERM4[]     = "Not FAT16 or 32 ";
+PROGMEM const char ERM5[]     = "Cluster < 64kB  ";
+PROGMEM const char ERM6[]     = "Missing MBR     ";
+PROGMEM const char ERMC[]     = "Err code: ";
 
 
 PROGMEM const char CFG[]  = "SDISKII CFG";
@@ -212,6 +214,9 @@ void init_sd(char splash)
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
+		else if (errorCode==5) lcd_put_p(ERM5);
+		else if (errorCode==6) lcd_put_p(ERM6);
+		else { lcd_put_p(ERMC); lcd_put_i(errorCode);} 
 		while(1)
 		{
 			inited = 0;
@@ -238,6 +243,9 @@ void init_sd(char splash)
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
+		else if (errorCode==5) lcd_put_p(ERM5);
+		else if (errorCode==6) lcd_put_p(ERM6);
+		else { lcd_put_p(ERMC); lcd_put_i(errorCode);} 
 		while(1)
 		{
 			inited = 0;

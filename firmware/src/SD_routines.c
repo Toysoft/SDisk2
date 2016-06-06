@@ -66,7 +66,7 @@ unsigned char SD_init(void)
 	SD_led_on();
 	SD_select_card();
 	lastBlockRead = 9999;
-	for(i = 0; i < 200; ++i)  SPI_clock_pulse_slow();
+	for(i = 0; i < 100; ++i)  SPI_clock_pulse_slow();
 
 	SPI_transmit (0xff);
 	SPI_transmit (0xff);
@@ -86,38 +86,56 @@ unsigned char SD_init(void)
 	
 	SPI_transmit (0xff);
 	SPI_transmit (0xff);
-	
+		
 	retry = 0;
 	SD_version = 2; //default set to SD compliance with ver2.x;
+	unsigned long ARG = 0x40000000;	
 	//this may change after checking the next command
 	do
 	{
 		response = SD_sendCommand(SEND_IF_COND,0x000001AA); //Check power supply status, mendatory for SDHC card
 		retry++;
-		if(retry>0x7fe)
+		if(retry>0x1fe)
 		{
 			SD_version = 1;
+			ARG = 0;
 			break;
 		} //time out
 	} while (response != 0x01);
+
+	SPI_transmit (0xff);
+	SPI_transmit (0xff);		
 	
 	retry = 0;
 	do
 	{
 		response = SD_sendCommand(APP_CMD,0); //CMD55, must be sent before sending any ACMD command
-		//_delay_ms(2); //originalmente era 1
-		response = SD_sendCommand(SD_SEND_OP_COND,0x40000000); //ACMD41
-		//_delay_ms(2); //originalmente era 1
+		response = SD_sendCommand(SD_SEND_OP_COND,ARG); //ACMD41
 		retry++;
-		if(retry>0x7fe)
-		{
-			SD_led_off();
-			SD_unselect_card();
-			errorCode = 2;
-			return 0;  //time out, card initialization failed
-		}
-		
+		if(retry>0x1fe)	break;	
 	} while (response != 0x00);
+		
+	// failed ACMD41 will try CMD1  for MMC 
+	if(response != 0x00 && ARG == 0)
+	{
+		retry = 0;
+		do
+		{
+
+			response = SD_sendCommand(APP_CMD,0); //CMD55, must be sent before sending any ACMD command
+			response = SD_sendCommand(SEND_OP_COND,0x00000000); //CMD1
+			retry++;
+			if(retry>0x1fe)	break;
+		} while (response != 0x00);
+	}
+
+	if(response != 0x00)
+	{
+		SD_led_off();
+		SD_unselect_card();
+		errorCode = 2;
+		return 0;  //time out, card initialization failed		
+	}
 	
 	retry = 0;
 	SDHC_flag = 0;
@@ -129,6 +147,7 @@ unsigned char SD_init(void)
 		shift = 0;
 		do
 		{
+			SPI_transmit (0xff);
 			response = SD_sendCommand(READ_OCR,0);
 			retry++;
 			if(retry>0xfe)
@@ -224,7 +243,7 @@ unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg)
 	  SPI_transmit(0x95);
 	
 	while((response = SPI_receive()) == 0xff) //wait response
-	if(retry++ > 0xfe) break; //time out error
+	  if(retry++ > 0xfe) break; //time out error
 	
 	if(response == 0x00 && cmd == 58)  //checking response of CMD58
 	{

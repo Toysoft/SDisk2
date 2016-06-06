@@ -75,7 +75,7 @@ unsigned char FAT_init(void)
 		mbr = (struct MBRinfo_Structure *) buffer;   
 		if(mbr->signature != 0xaa55)
 		{
-			errorCode = 3;
+			errorCode = 6;
 			return 0;      
 		}
 		partition = (struct partitionInfo_Structure *)(mbr->partitionData);
