@@ -1,11 +1,8 @@
 /*------------------------------------
-
 SDISK II LCD Firmware
-
 2010.11.11 by Koichi Nishida
 2012.01.26 by Fábio Belavenuto
 2015.07.02 by Alexandre Suaide
-
 -------------------------------------
 */
 
@@ -24,19 +21,15 @@ Added support for a 16x2 LCD
 
 /*
 This is a part of the firmware for DISK II emulator by Nishida Radio.
-
 Copyright (C) 2010 Koichi NISHIDA
 email to Koichi NISHIDA: tulip-house@msf.biglobe.ne.jp
-
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
@@ -56,7 +49,7 @@ void lcd_port(unsigned char c)
 	_delay_us(1);
 }
 
-#include <util/delay.h>// ------------------------------------
+// ------------------------------------
 void lcd_cmd(unsigned char c)
 {
 	PORTD |= _BV(1);	// SD CS=1 - SD Desabilitado
@@ -96,6 +89,8 @@ void lcd_init()
 	lcd_cmd(0x02);		// home
 	lcd_cmd(0x06);		// Cursor incrementa para direita
 	lcd_cmd(0x0C);		// Display on, cursor off
+	
+	lcd_contrast = 0xAA;
 }
 
 // clear lcd
@@ -106,7 +101,7 @@ void lcd_clear()
 }
 
 // Goto X,Y
-void lcd_gotoxy(unsigned char x, unsigned char y) 
+void lcd_gotoxy(unsigned char x, unsigned char y)
 {
 	x &= 0x0F;
 	y &= 0x01;
@@ -119,25 +114,25 @@ void lcd_char(unsigned char c)
 {
 	lcd_data(c);
 }
-void lcd_put_s(char *str) 
+void lcd_put_s(char *str)
 {
 	register char c;
 
 	while( (c = *(str++))) lcd_char(c);
 }
-void lcd_put_i(unsigned int value) 
+void lcd_put_i(unsigned int value)
 {
 	char buffer[10];
 	itoa(value,buffer,10);
 	lcd_put_s(buffer);
 }
-void lcd_put_l(unsigned long int value) 
+void lcd_put_l(unsigned long int value)
 {
 	char buffer[10];
 	ltoa(value,buffer,10);
 	lcd_put_s(buffer);
 }
-void lcd_put_p(const prog_char *progmem_s) 
+void lcd_put_p(const prog_char *progmem_s)
 {
 	register char c;
 	while ( (c = pgm_read_byte(progmem_s++)) )  lcd_char(c);

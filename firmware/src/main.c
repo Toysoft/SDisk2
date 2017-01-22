@@ -85,32 +85,64 @@ unsigned char  old_trk;
 5 - Cluster size smaller than minimum to keep buffer
 */
 
+
 /*                               1234567890123456 */
-PROGMEM const char MSG1[]     = "SDISK2 LCD v.3.3";
-PROGMEM const char MSG2[]     = "  Apple II-BR   ";
-PROGMEM const char MSG3[]     = "ERROR on SD card";
-PROGMEM const char MSG4[]     = "    SDHC card   ";
-PROGMEM const char MSG5[]     = " Normal SD card ";
-PROGMEM const char MSG6[]     = " No SD inserted ";
-PROGMEM const char MSG7[]     = "Select NIC image";
-PROGMEM const char MSG8[]     = " No image here! ";
-PROGMEM const char MSG9[]     = "NIC: ";
-PROGMEM const char MSGC[]     = "Building list...";
-PROGMEM const char MSGD[]     = "Sorting list... ";
-PROGMEM const char PART[]     = "Partition: ";
-PROGMEM const char FAT3[]     = "FAT32";
-PROGMEM const char FAT1[]     = "FAT16";
+#ifdef _LCD_
+PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.4.1";
+PROGMEM const char SPLASH2[]  = "  Apple ][ BR   ";
+PROGMEM const char NIC[]      = "NIC: ";
+PROGMEM const char EMP[]      = "                ";
 PROGMEM const char SPE0[]     = "Delay: ";
 PROGMEM const char SPE1[]     = "Select delay:  ";
 PROGMEM const char TRAK[]     = "TR: ";
-PROGMEM const char EMP[]      = "                ";
-PROGMEM const char ERM1[]     = "SD can not idle ";
-PROGMEM const char ERM2[]     = "SD can not init ";
-PROGMEM const char ERM3[]     = "Boot sec broken ";
-PROGMEM const char ERM4[]     = "Not FAT16 or 32 ";
-PROGMEM const char ERM5[]     = "Cluster < 64kB  ";
-PROGMEM const char ERM6[]     = "Missing MBR     ";
-PROGMEM const char ERMC[]     = "Err code: ";
+PROGMEM const char MSG7[]     = "Select NIC image";
+PROGMEM const char MSGC[]     = "Building list...";
+PROGMEM const char MSG8[]     = " Nothing here!  ";
+PROGMEM const char MSGD[]     = "Sorting files...";
+#define TRX 10
+#define TRY 1
+#endif
+
+#ifdef _LCD_NOKIA_
+/*                               12345678901234 */
+PROGMEM const char SPLASH1[]  = "SDisk ][";
+PROGMEM const char SPLASH2[]  = "Apple ][ - BR";
+PROGMEM const char VERSION[]  = "v. 4.1 (2017)";
+PROGMEM const char NIC[]      = " NIC          ";
+PROGMEM const char SETUP[]    = " SETUP        ";
+PROGMEM const char EMP[]      = "              ";
+PROGMEM const char SET1[]     = " Set SD delay ";
+PROGMEM const char SET2[]     = " Set contrast ";
+PROGMEM const char VALUE[]    = " Value: ";
+PROGMEM const char CONT[]     = " LCD CONTRAST ";
+PROGMEM const char DLAY[]     = " SD DELAY     ";
+PROGMEM const char TRAK[]     = "Track: ";
+PROGMEM const char MSG7[]     = " SELECT NIC   ";
+PROGMEM const char MSGC[]     = " Building list";
+PROGMEM const char MSG8[]     = " Nothing here!";
+PROGMEM const char MSGD[]     = " Sorting files";
+
+#define TRX 12
+#define TRY 3
+#endif
+
+PROGMEM const char ERR[]      = "E R R O R";
+PROGMEM const char ERM1[]     = "SD can't idle ";
+PROGMEM const char ERM2[]     = "SD can't init ";
+PROGMEM const char ERM3[]     = "Boot sector   ";
+PROGMEM const char ERM4[]     = "Not FAT16/32  ";
+PROGMEM const char ERM5[]     = "Cluster < 32kB";
+PROGMEM const char ERM6[]     = "Missing MBR   ";
+PROGMEM const char ERMC[]     = "Code: ";
+PROGMEM const char MSHC[]     = "   SDHC card  ";
+PROGMEM const char MSSD[]     = "Normal SD card";
+PROGMEM const char PART[]     = "Type: ";
+PROGMEM const char FAT3[]     = "FAT32";
+PROGMEM const char FAT1[]     = "FAT16";
+
+PROGMEM const char SDOUT[]    = "No SD inserted";
+
+
 
 
 PROGMEM const char CFG[]  = "SDISKII CFG";
@@ -162,10 +194,10 @@ int main(void)
 					if(trk!=old_trk)
 					{
 						old_trk = trk;
-						lcd_gotoxy(10,1);
+						lcd_gotoxy(TRX,TRY);
 						lcd_put_p(TRAK);
+						if(trk<10) lcd_put_s(" ");
 						lcd_put_i((unsigned int)trk);
-						lcd_put_s(" ");
 					}
 					
 					if (((sectors[0]==sector)&&(tracks[0]==trk)) || ((sectors[1]==sector)&&(tracks[1]==trk)) ||
@@ -187,6 +219,24 @@ int main(void)
 		}
 	}
 }
+void display_sd_ejected()
+{
+		lcd_clear();
+		#ifdef _LCD_
+		lcd_gotoxy(0,0);
+		lcd_put_p(SDOUT);
+		lcd_gotoxy(1,1);
+		lcd_put_p(EMP);
+		#endif
+		#ifdef _LCD_NOKIA_
+		lcd_gotoxy(15,1);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,3);
+		lcd_put_p(SDOUT);
+		#endif
+	    do {} while(SD_ejected());
+		return;
+}
 void init_sd(char splash)
 {
 	id_of_config_file = -1;
@@ -195,9 +245,7 @@ void init_sd(char splash)
 	unsigned char ok;
 	if(SD_ejected())
 	{
-		lcd_clear();
-		lcd_gotoxy(0,0);
-		lcd_put_p(MSG6);
+		display_sd_ejected();
 		return;
 	}
 	
@@ -207,14 +255,21 @@ void init_sd(char splash)
 	if(!ok)
 	{
 		lcd_clear();
-		lcd_gotoxy(0,0);
-		lcd_put_p(MSG3);
-		lcd_gotoxy(0,1);
+		#ifdef _LCD_
+		  lcd_gotoxy(0,0);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,1);
+		#endif
+		#ifdef _LCD_NOKIA_
+		  lcd_gotoxy(15,1);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,3);
+		#endif  
 		if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
-		else if (errorCode==5) lcd_put_p(ERM5);
+		else if (errorCode==5) lcd_put_p(ERM5); 
 		else if (errorCode==6) lcd_put_p(ERM6);
 		else { lcd_put_p(ERMC); lcd_put_i(errorCode);} 
 		while(1)
@@ -226,9 +281,14 @@ void init_sd(char splash)
 	if(splash)
 	{
 		lcd_clear();
-		lcd_gotoxy(0,0);
-		if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSG4);
-		else if(splash) lcd_put_p(MSG5);
+		#ifdef _LCD_ 
+		  lcd_gotoxy(1,0);
+		#endif
+		#ifdef _LCD_NOKIA_
+		  lcd_gotoxy(0,1);
+		#endif
+		if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSHC);
+		else if(splash) lcd_put_p(MSSD);
 		SD_select_card();
 	}
 	
@@ -236,9 +296,16 @@ void init_sd(char splash)
 	if(!ok)
 	{
 		lcd_clear();
-		lcd_gotoxy(0,0);
-		lcd_put_p(MSG3);
-		lcd_gotoxy(0,1);
+		#ifdef _LCD_
+		  lcd_gotoxy(0,0);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,1);
+		#endif
+		#ifdef _LCD_NOKIA_
+		  lcd_gotoxy(15,1);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,3);
+		#endif  
 		if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
@@ -249,7 +316,7 @@ void init_sd(char splash)
 		while(1)
 		{
 			inited = 0;
-			if(SD_ejected()) return;
+			if(SD_ejected()) return; 
 		};
 	}
 	
@@ -257,9 +324,16 @@ void init_sd(char splash)
 	{
 		errorCode = 5;
 		lcd_clear();
-		lcd_gotoxy(0,0);
-		lcd_put_p(MSG3);
-		lcd_gotoxy(0,1);
+		#ifdef _LCD_
+		  lcd_gotoxy(0,0);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,1);
+		#endif
+		#ifdef _LCD_NOKIA_
+		  lcd_gotoxy(15,1);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,3);
+		#endif
 		lcd_put_p(ERM5);
 		while(1)
 		{
@@ -270,11 +344,17 @@ void init_sd(char splash)
 	
 	if(splash)
 	{
-		lcd_gotoxy(0,1);
+		#ifdef _LCD_
+		  lcd_gotoxy(0,1);
+		#endif
+		#ifdef _LCD_NOKIA_
+		  //lcd_border();
+		  lcd_gotoxy(9,4);
+		#endif
 		lcd_put_p(PART);
 		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
 		else lcd_put_p(FAT1);
-		_delay_ms(500);
+		_delay_ms(1000);
 		SD_select_card();
 	}
 	
@@ -283,21 +363,40 @@ void init_sd(char splash)
 }
 void init(char splash)
 {
+	// configuracao das portas do microcontrolador
 	
-	DDRB = 0b00010000;	/* PB4 = LED */
-	DDRC = 0b00111010;  /* PC1 = READ PULSE/LCD D4, PC3 = WRITE PROTECT/LCD D5, PC4 = LCD RS, PC5 = LCD E */
-	DDRD = 0b00110010;  /* PD1 = SD CS, PD4 = SD DI/LCD D6, PD5 = SD SCK/LCD D7 */
+	DDRB = 0;
+	DDRC = 0;
+	DDRD = 0;
+	
+	PORTB = 0;
+	PORTC = 0;
+	PORTD = 0;
+	
+	// configuração do LED 
+	set_bit(SD_LED_PORTD,SD_LED);
+	set_bit(SD_LED_PORT,SD_LED); // LED ligado
+		
+	// configuração das portas do LCD da SDISK original
+	#ifdef _LCD_
+		DDRC = 0b00111010;  /* PC1 = READ PULSE/LCD D4, PC3 = WRITE PROTECT/LCD D5, PC4 = LCD RS, PC5 = LCD E */
+		DDRD = 0b00110010;  /* PD1 = SD CS, PD4 = SD DI/LCD D6, PD5 = SD SCK/LCD D7 */
+		PORTC = 0b00000010; /* PC4=0 - LCD RS, PC5=0 - LCD Desabilitado */
+		PORTD = 0b00000010; /* PD1=0 - SD Desabilitado */
+	#endif
+	
+	// configuração da interface com o Apple 
+	
+	set_bit(DDRC, 1);
+	set_bit(DDRC, 3);
+	set_bit(PORTC, 1);
 
-	PORTB = 0b00010000; /* PB4=1 - Led Aceso */
-	PORTC = 0b00000010; /* PC4=0 - LCD RS, PC5=0 - LCD Desabilitado */
-	PORTD = 0b00000010; /* PD1=0 - SD Desabilitado */
-
-	// timer interrupt
+	// configuração da interrupção de tempo
 	OCR0A = 0;
 	TCCR0A = 0;
 	TCCR0B = 1;
 
-	// int0 interrupt
+	// configuração da interrupção int0
 	MCUCR = 0b00000010;
 	EICRA = 0b00000010;
 
@@ -317,10 +416,22 @@ void init(char splash)
 	{
 		lcd_init();
 		lcd_clear();
-		lcd_put_p(MSG1);
-		lcd_gotoxy(0,1);
-		lcd_put_p(MSG2);
-		_delay_ms(200);
+		lcd_gotoxy(0,0);
+		#ifdef _LCD_
+			lcd_put_p(SPLASH1);
+			lcd_gotoxy(0,1);
+			lcd_put_p(SPLASH2);
+		#endif
+		#ifdef _LCD_NOKIA_
+			lcd_border();
+			lcd_gotoxy(18,1);
+			lcd_put_p(SPLASH1);
+			lcd_gotoxy(3,2);
+			lcd_put_p(SPLASH2);
+			lcd_gotoxy(3,4);
+			lcd_put_p(VERSION);
+		#endif
+		_delay_ms(1000);
 	}
 }
 
@@ -334,13 +445,10 @@ void verify_status(void)
 		EIMSK &= ~(1<<INT0);
 		inited = 0;
 		prepare = 0;
-		lcd_gotoxy(0,0);
-		lcd_put_p(MSG6);
-		lcd_gotoxy(0,1);
-		lcd_put_p(EMP);
+		display_sd_ejected();
 		return;
 	}
-	else if(diskII_disable() && (enter_is_pressed() || down_is_pressed()))
+	else if(diskII_disable() && (enter_is_pressed() || down_is_pressed() || up_is_pressed()))
 	{
 		if(enter_is_pressed())  // drive disabled
 		{
@@ -361,7 +469,7 @@ void verify_status(void)
 			}
 			return;
 		}
-		else if(down_is_pressed())
+		else if(down_is_pressed()) //setup
 		{
 			unsigned char flg = 1;
 			for (i = 0; i != 100; i++) if (!down_is_pressed()) flg = 0;
@@ -369,7 +477,12 @@ void verify_status(void)
 			{
 				while (down_is_pressed());  // enter button pushed !
 				cli();
-				set_speed();
+				#ifdef _LCD_
+				  set_speed();
+				#endif
+				#ifdef _LCD_NOKIA_
+				  setup();
+				#endif
 				if(SD_ejected()) return;
 				find_previous_nic();
 				if (inited)
@@ -380,6 +493,24 @@ void verify_status(void)
 				sei();
 			}
 			return;
+		}
+		else if(up_is_pressed())
+		{
+			unsigned char flg = 1;
+			for (i = 0; i != 100; i++) if (!up_is_pressed()) flg = 0;
+			if(flg)
+			{
+				while (up_is_pressed()); // botao ainda apertado
+				cli();
+				swap_nic();
+				if(SD_ejected()) return;
+				if(inited)
+				{
+					TIMSK0 |= (1<<TOIE0);
+					EIMSK |= (1<<INT0);
+				}				
+				sei();
+			}
 		}
 	}
 	else if(!inited) // if not initialized
@@ -396,13 +527,215 @@ void verify_status(void)
 		sei();
 	}
 }
+#ifdef _LCD_NOKIA_
+void set_contrast()
+{
+	unsigned char contrast = 0XAF;
+	if(id_of_config_file!=-1)
+	{
+		cd(0);
+		buffer = &writeData[0][0];
+		buffClear();
+		lastBlockRead = 0;
+		struct dir_Structure* config_file = getFile(id_of_config_file);
+		unsigned long cluster;
+						
+		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
+		else cluster = (unsigned long)config_file->firstClusterLO;
+						
+		SD_readSingleBlock(getSector(cluster));
+		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+		if(config->checksum == CHECKSUM_CONFIG)
+		{
+			contrast = config->lcd_contrast;
+		}
+	}
+	lcd_clear();
+	lcd_gotoxy(0,0);
+	lcd_underline();
+	lcd_put_p(CONT);
+	lcd_underline();
+	icons(4,5,3);
+	
+	lcd_gotoxy(0,2);
+	lcd_put_p(VALUE);	
+	lcd_put_i(contrast);
+	
+	unsigned char old_contrast = contrast;
+	unsigned char original_contrast = contrast;
+	while(1)
+	{
+		if(contrast!=old_contrast)
+		{
+			lcd_gotoxy(0,2);
+			lcd_put_p(VALUE);
+			lcd_put_i(contrast);
+			lcd_put_p(PSTR(" "));
+			old_contrast = contrast;
+		}
+		
+		if(SD_ejected()) return; // card is removed
+		if(down_is_pressed())
+		{
+			while(down_is_pressed()){}
+			_delay_ms(200);
+			
+			contrast--;
+			if(contrast<MIN_CONTRAST) contrast = MIN_CONTRAST;
+			else
+			{
+				lcd_contrast = contrast;
+				lcd_config();
+			}
+		}
+		if(up_is_pressed())
+		{
+			while(up_is_pressed()){}
+			_delay_ms(200);
+			
+			contrast++;
+			if(contrast>MAX_CONTRAST) contrast = MAX_CONTRAST;
+			else
+			{
+				lcd_contrast = contrast;
+				lcd_config();
+			}
+		}
+		if(enter_is_pressed())
+		{
+			while(enter_is_pressed()){}
+			_delay_ms(200);
+			if(contrast != original_contrast)
+			{
+				lcd_contrast = contrast;
+				lcd_config();
+				SD_select_card();
+				if(id_of_config_file!=-1)
+				{
+					cd(0);
+					buffer = &writeData[0][0];
+					buffClear();
+					lastBlockRead = 0;
+					struct dir_Structure* config_file = getFile(id_of_config_file);
+					unsigned long cluster;
+					
+					if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
+					else cluster = (unsigned long)config_file->firstClusterLO;
+					
+					SD_readSingleBlock(getSector(cluster));
+					struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+					if(config->checksum == CHECKSUM_CONFIG)
+					{
+						config->lcd_contrast = contrast;
+						SD_writeSingleBlock(getSector(cluster));
+					}
+				}
+				
+			}
+			return;
+		}
+	}
+	return;
+}
+void icons(unsigned char i1, unsigned char i2, unsigned char i3)
+{
+	lcd_gotoxy(0,5);
+	lcd_overline();
+	lcd_put_p(EMP);
+	lcd_gotoxy(0,5);
+	lcd_icon(i1);
+	lcd_gotoxy(36,5);
+	lcd_icon(i2);
+	lcd_gotoxy(71,5);
+	lcd_icon(i3);
+	lcd_overline();
+	
+}
+void setup()
+{
+	lcd_clear();
+	lcd_gotoxy(0,0);
+	lcd_underline();
+	lcd_put_p(SETUP);
+	lcd_underline();
+	icons(4,5,3);	
+	
+	unsigned char option = 1;
+	lcd_gotoxy(0,2);
+	lcd_inverse();
+	lcd_put_p(SET1);
+	lcd_inverse();
+	lcd_gotoxy(0,3);
+	lcd_put_p(SET2);
+	
+	while(1)
+	{
+		if(down_is_pressed())
+		{
+			while(down_is_pressed()){}
+			_delay_ms(200);
+			
+			option++;
+			if(option>2) option = 2;
+			else
+			{
+				lcd_gotoxy(0,2);
+				lcd_put_p(SET1);
+				lcd_inverse();
+				lcd_gotoxy(0,3);
+				lcd_put_p(SET2);
+				lcd_inverse();			
+			}
+		}
+		if(up_is_pressed())
+		{
+			while(up_is_pressed()){}
+			_delay_ms(200);
+			
+			option--;
+			if(option<1) option = 1;
+			else
+			{
+				lcd_gotoxy(0,2);
+				lcd_inverse();
+				lcd_put_p(SET1);
+				lcd_inverse();
+				lcd_gotoxy(0,3);				
+				lcd_put_p(SET2);
+			}
+		}
+		if(enter_is_pressed())
+		{
+			while(enter_is_pressed()){}
+			_delay_ms(200);
+			if(option == 1) set_speed();
+			if(option == 2) set_contrast();
+			return;
+		}
+	}
+		
+}
+#endif
 void set_speed()
 {
 	lcd_clear();
+	#ifdef _LCD_NOKIA_
+	lcd_gotoxy(0,0);
+	lcd_underline();
+	lcd_put_p(DLAY);
+	lcd_underline();
+	icons(4,5,3);
+	lcd_gotoxy(0,2);
+	lcd_put_p(VALUE);
+	#endif
+	
+	#ifdef _LCD_
 	lcd_gotoxy(0,0);
 	lcd_put_p(SPE1);
 	lcd_gotoxy(0,1);
 	lcd_put_p(SPE0);
+	#endif
+	
 	lcd_put_i(SD_speed);
 	unsigned char old_speed = SD_speed;
 	unsigned char original_speed = SD_speed;
@@ -410,10 +743,18 @@ void set_speed()
 	{
 		if(SD_speed!=old_speed)
 		{
-			lcd_gotoxy(0,1);
-			lcd_put_p(SPE0);
+			#ifdef _LCD_
+			  lcd_gotoxy(0,1);
+			  lcd_put_p(SPE0);
+			#endif
+			#ifdef _LCD_NOKIA_
+			  lcd_gotoxy(0,2);
+			  lcd_put_p(VALUE);
+			#endif
+			
 			lcd_put_i(SD_speed);
 			lcd_put_p(PSTR(" "));
+			
 			old_speed = SD_speed;
 		}
 		
@@ -467,6 +808,7 @@ void set_speed()
 	}
 	return;
 }
+
 void select_nic()
 {
 	int i = 0, j =0, k =0;
@@ -477,10 +819,25 @@ void select_nic()
 	lastBlockRead = -1;
 	buffClear();
 	
+	#ifdef _LCD_NOKIA_
+	  lcd_underline();
+	#endif
 	lcd_gotoxy(0,0);
 	lcd_put_p(MSG7);
 	lcd_gotoxy(0,1);
+	#ifdef _LCD_NOKIA_
+	  lcd_underline();
+	  icons(4,5,3);
+	  for(i= 1;i<=4;i++) 
+	  {
+		  lcd_gotoxy(0,i);
+	      lcd_put_p(EMP);
+	  }
+	  lcd_gotoxy(0,2);
+	#endif
 	lcd_put_p(MSGC);
+	
+	i = 0;
 
 	do
 	{
@@ -496,12 +853,22 @@ void select_nic()
 		
 	if(nfiles == 0)
 	{
-		lcd_gotoxy(0,1);
+		#ifdef _LCD_
+  			lcd_gotoxy(0,1);
+		#endif
+		#ifdef _LCD_NOKIA_
+			lcd_gotoxy(0,2);
+		#endif
 		lcd_put_p(MSG8);
 		return;
 	}
 	
-	lcd_gotoxy(0,1);
+	#ifdef _LCD_
+		lcd_gotoxy(0,1);
+	#endif
+	#ifdef _LCD_NOKIA_
+		lcd_gotoxy(0,2);
+	#endif
 	lcd_put_p(MSGD);
 	
 	// sort list of files in the directory
@@ -567,10 +934,18 @@ void select_nic()
 		{
 			index_old = index;
 			struct dir_Structure *file = getFile(files_id[index]);
-			lcd_gotoxy(0,1);
-			if(is_a_dir(file)) lcd_put_s("[");
+			#ifdef _LCD_
+			  lcd_gotoxy(0,1);
+			  if(is_a_dir(file)) lcd_put_s("[");
+			#endif
+			#ifdef _LCD_NOKIA_
+			  lcd_gotoxy(0,2);
+			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
+			#endif
 			for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
-			if(is_a_dir(file)) lcd_put_s("]");
+			#ifdef _LCD_
+			  if(is_a_dir(file)) lcd_put_s("]");
+			#endif
 			lcd_put_p(EMP);
 		}	
 	}
@@ -591,7 +966,7 @@ void find_previous_nic()
 		if(file) 
 		{
 			if(file->name[0]== 0x00) break; // last file on directory
-			
+						
 			// save pointer of first NIC found, just in case the config file is not found
 			if(is_a_nic(file) && firstNic == -1) 
 			{
@@ -610,6 +985,14 @@ void find_previous_nic()
 				if(config->checksum==CHECKSUM_CONFIG)
 				{
 					SD_speed =config->sd_card_speed;
+					#ifdef _LCD_NOKIA_
+					  lcd_contrast = config->lcd_contrast;
+					  if(lcd_contrast >MAX_CONTRAST) lcd_contrast = 40;
+					  if(lcd_contrast<MIN_CONTRAST) lcd_contrast = 40;
+					  lcd_config();
+					  SD_select_card();
+					#endif  
+										
 					// set directory
 					FAT_sectorOfCurrentDirectory = config->directory_of_last_mounted_nic;
 					unsigned int tmp = config->id_of_last_mounted_nic;
@@ -692,16 +1075,68 @@ void create_config_file()
 	} while (i<MAXFILES*2);
 	return;
 }
+void swap_nic()
+{
+	unsigned long current_dir = FAT_sectorOfCurrentDirectory;
+	
+	if(id_of_config_file!=-1)
+	{
+		cd(0);
+		lastBlockRead = -1;
+		struct dir_Structure* config_file = getFile(id_of_config_file);
+		
+		unsigned long cluster = 0;
+		
+		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
+		else cluster = (unsigned long)config_file->firstClusterLO;
+		
+		SD_readSingleBlock(getSector(cluster));
+		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
+
+		lastBlockRead = -1;
+		FAT_sectorOfCurrentDirectory  = config->directory_of_previous_mounted_nic;
+		int file_id = config->id_of_previous_mounted_nic;
+		struct dir_Structure *file = getFile(file_id);
+		
+		if(is_a_nic(file))
+		{
+			mount_nic_image(file_id,file);
+			return;
+		}
+	}
+
+	// restore point to the current directory
+	FAT_sectorOfCurrentDirectory = current_dir;
+}
 unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 {
-	if(!file) return 0;	
+	if(!file) return 0;
 	
-	lcd_gotoxy(0,0);
-	lcd_put_p(MSG9);
-	for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
-	lcd_put_p(EMP);
-	lcd_gotoxy(0,1);
-	lcd_put_p(EMP);
+	#ifdef _LCD_
+	  lcd_gotoxy(0,0);
+	  lcd_put_p(NIC);
+	  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+	  lcd_put_p(EMP);
+	  lcd_gotoxy(0,1);
+	  lcd_put_p(EMP);
+	  lcd_gotoxy(0,1);
+	  lcd_put_p(SPE0);
+	  lcd_put_i(SD_speed);
+	#endif
+	#ifdef _LCD_NOKIA_
+	  lcd_clear();
+	  lcd_gotoxy(0,0);
+	  lcd_underline();
+	  lcd_put_p(NIC);
+	  lcd_gotoxy(53,0);
+	  if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
+	  else lcd_put_p(FAT1);
+	  lcd_underline();
+	  icons(0,1,2);
+	  lcd_gotoxy(0,2);
+	  lcd_icon(1);
+	  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+	#endif
 	
 	selected_file_id = file_id;
 
@@ -747,21 +1182,26 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
 		else cluster = (unsigned long)config_file->firstClusterLO;
 			
-		//SD_readSingleBlock(getSector(cluster));
+		SD_readSingleBlock(getSector(cluster));
 		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
 		config->checksum = CHECKSUM_CONFIG;
+		
+		if(config->directory_of_last_mounted_nic != current_dir || config->id_of_last_mounted_nic != file_id)
+		{
+			config->directory_of_previous_mounted_nic = config->directory_of_last_mounted_nic;
+			config->id_of_previous_mounted_nic = config->id_of_last_mounted_nic;
+		}
+		
 		config->directory_of_last_mounted_nic = current_dir;
 		config->id_of_last_mounted_nic = file_id;
 		config->sd_card_speed = SD_speed;
+		config->lcd_contrast = lcd_contrast;
+		
 		SD_writeSingleBlock(getSector(cluster));
 	}
 
 	// restore point to the current directory
-	FAT_sectorOfCurrentDirectory = current_dir;
-
-	lcd_gotoxy(0,1);
-	lcd_put_p(SPE0);
-	lcd_put_i(SD_speed);
+	FAT_sectorOfCurrentDirectory = current_dir;	
 
 	bitbyte = 0;
 	readPulse = 0;
@@ -901,8 +1341,8 @@ void writeBackSub2(unsigned char bn, unsigned char sc, unsigned char track)
 	SPI_read_byte_fast();
 	SD_wait_finish();
 	
-	PORTD = NCLKNDI_CS;
-	PORTD = NCLKNDINCS;
+	SPI_PORT = NCLKNDI_CS;
+	SPI_PORT = NCLKNDINCS;
 	
 }
 void writeBack()

@@ -41,28 +41,36 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
+
 #ifndef __SDISK2__
 #define __SDISK2__
+
+// these are done during compilation
+//#define _LCD_
+//#define _LCD_NOKIA_
+
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
 #include "string.h"
-#include "lcd.h"
+
+#ifdef _LCD_
+	#include "lcd.h"
+#endif
+
+#ifdef _LCD_NOKIA_
+	#include "lcd_nokia.h"
+#endif
+
 #include "SPI_routines.h"
 #include "SD_routines.h"
 #include "FAT32.h"
 #include "config.h"
 
-#define ENTER_PORT       PIND
-#define DOWN_PORT        PIND
-#define UP_PORT          PINB
-#define ENTER_BIT        DDD6
-#define DOWN_BIT         DDD7
-#define UP_BIT           DDB5
-#define DISKII_PIN       PINC
-#define DISKII_ENABLE    DDC0
+#define MAXNIC           4
 
 #define enter_is_pressed() bit_is_clear(ENTER_PORT,ENTER_BIT)
 #define down_is_pressed()  bit_is_clear(DOWN_PORT,DOWN_BIT)
@@ -70,19 +78,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define diskII_disable()   bit_is_set(DISKII_PIN,DISKII_ENABLE)
 
 #define CHECKSUM_CONFIG 0X01AB02CD
+
 struct Sdisk_config_structure
 {
 	unsigned long checksum;
 	unsigned char sd_card_speed;
 	unsigned long directory_of_last_mounted_nic;
 	unsigned int  id_of_last_mounted_nic;
+	unsigned long directory_of_previous_mounted_nic;
+	unsigned int  id_of_previous_mounted_nic;
+	unsigned char lcd_contrast;
+	unsigned char nic_mounted;
+	unsigned char EMPTY[64]; // just leave empty for future features
+	unsigned long nic_dir[MAXNIC];
+	unsigned int  nic_id[MAXNIC];
 };
 
 void            init(char splash);
+void            display_sd_ejected();
 void            init_sd(char splash);
 void            verify_status();
 void            select_nic();
 void            find_previous_nic();
+void            swap_nic();
 unsigned char   is_a_nic(struct dir_Structure *file);
 unsigned char   is_a_dir(struct dir_Structure *file);
 unsigned int    mount_nic_image(int file_id, struct dir_Structure* file);
@@ -93,6 +111,11 @@ void            writeBack();
 void            cancelRead();
 void            buffClear();
 void            set_speed();
+#ifdef _LCD_NOKIA_
+void            set_contrast();
+void            setup();
+void            icons(unsigned char i1, unsigned char i2, unsigned char i3);
+#endif
 int             main(void);
 
 #endif

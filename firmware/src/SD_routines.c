@@ -55,6 +55,8 @@ unsigned char shift;
 
 unsigned char SD_init(void)
 {
+	
+	
 	unsigned char i, response;
 	unsigned int retry = 0 ;
 	SD_speed = 5;

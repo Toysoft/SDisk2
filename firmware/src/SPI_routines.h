@@ -45,18 +45,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define _SPI_ROUTINES_H_
 
 #include "config.h"
-
-#define SPI_MISO  0
-#define SPI_CLOCK 5
-#define SPI_MOSI  4
-#define SPI_CS    1
-#define SPI_DDR   DDRD
-#define SPI_PIN   PIND
-#define SPI_PORT  PORTD
 #define WAIT 1
-
-#define clear_bit(a,z) (a &= ~_BV(z))
-#define set_bit(a,z) (a |= _BV(z))
 
 extern unsigned char errorCode;
 

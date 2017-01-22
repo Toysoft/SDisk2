@@ -4,6 +4,21 @@ SDISKII firmware
 This package contains a new version of the firmware for the SDISKII with the LCD and 
 buttons to select the NIC image.
 
+The are 3 compiled versions of this firmware:
+
+1. sdisk2_original.hex
+  This is the original SDISK II with the 16 x 2 LCD done by Victor Trucco and Fábio
+  Belavenuto
+
+2. sdisk2_original_mod_nokia.hex
+  This is the original SDISK II hardware done by Victor Trucco and Fábio Belavenuto
+  with the mod done by Alexandre Suaide in order to replace the 16 x 2 LCD with
+  the Nokia 5110 graphical display
+
+3. sdisk2_nokia.hex
+  This is for the second version of the SDISK II done by Victor Trucco already with the
+  Nokia 5110 graphical display and USB connection to update the firmware.
+
 Formatting the SD card
 ======================
 
@@ -19,10 +34,11 @@ Windows:
 
 MAC OS/X
 
+  diskutil partitionDisk /dev/[disk name] MBR "MS-DOS FAT16" SDISKII 0b
   newfs_msdos -F 16 -c 64 /dev/[disk name]
 
-  you can replace 16 (FAT16) by 32 (FAT32). 64 is the number of blocks per cluster 
-  and can be larger.
+  you can replace 16 (FAT16) by 32 (FAT32). The same for the partition scheme. 
+  64 is the number of blocks per cluster and can be larger.
 
 Linux
 
@@ -55,6 +71,14 @@ When there is no disk activity (LED off), press the LEFT button. The SDISKII wil
 prompt you to select the speed of the card. Use the LEFT and RIGHT buttons to 
 navigate the available speeds and the ENTER (middle) button to select it.
 
+Swap between two disk images
+============================
+
+If you have the SDISKII.CFG file saved in your SD card (see bellow) we keep track of the
+previous mounted NIC image. In this case, if you press the RIGHT button we swap the current
+mounted NIC with the previous one. This may be useful if you are copying from one image to
+another or if you are playing a game that spans over two images.
+
 Saving the default values and last NIC mounted
 ==============================================
 
@@ -68,8 +92,10 @@ Upgrading your SDISKII with this new firmware
 
 In order to upgrade your SDISKII with this new firmware you will need a chip programmer, such 
 as the MiniPro TL866CS. Remove the ATMEGA328P from your SDISKII, plug it in the programmer.
-Open the programmer software, load the firmware (sdisk2.hex). Check if the fuses are right.
-The values for the fuses are:
+Open the programmer software, load the firmware (sdisk2.hex for the old model with 16x2 LCD
+or sdisk2_nokia.hex for the Nokia5110 LCD). 
+
+Check if the fuses are right. The values for the fuses are:
 
    LFUSE = 0xDE
    HFUSE = 0xD9

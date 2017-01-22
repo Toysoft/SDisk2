@@ -40,12 +40,11 @@ See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
+
+#include "config.h"
+
 #ifndef _SD_ROUTINES_H_
 #define _SD_ROUTINES_H_
-
-#define SD_LED_PORT PORTB
-#define SD_LED_PORTD DDRB
-#define SD_LED 4
 
 #define SD_PORTD SPI_DDR
 #define SD_PORT SPI_PORT
