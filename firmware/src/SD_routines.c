@@ -92,17 +92,29 @@ unsigned char SD_init(void)
 		SPI_transmit (0xff);
 		
 		retry = 0;
-		SD_version = 1; //default set to SD compliance with ver2.x;
+		 
 		unsigned long ARG = 0;;
 		//this may change after checking the next command
 		do
 		{
 			response = SD_sendCommand(CMD8,0x000001AA); //Check power supply status, mandatory for SDHC card
 			retry++;
-			if(retry>0xff)
+			if((response & 0xFFF) == 0x1AA)
+			{
+				SD_version = 1;
+				ARG = 0;
+				break;
+			}
+			if(response == 0x01)
 			{
 				SD_version = 2;
 				ARG = 0x40000000;
+				break;
+			}
+			if(retry>0x1fe)
+			{
+				SD_version = 1;
+				ARG = 0;
 				break;
 			} //time out
 		} while ((response&0xFFF) != 0x1AA);
