@@ -1,3 +1,5 @@
+
+
 /*------------------------------------
 
 SDISK II LCD Firmware
@@ -53,7 +55,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define SD_CS SPI_CS
 #define SD_DI SPI_MISO
 #define SD_CLK SPI_CLOCK
-#define SD_EJECT 3
 
 #define SD_RAW_SPEC_1 0
 #define SD_RAW_SPEC_2 1
@@ -63,28 +64,43 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define SD_MAX_SPEED 10
 
 //SD commands, many of these are not used here
-#define GO_IDLE_STATE            0
-#define SEND_OP_COND             1
-#define SEND_IF_COND		     8
-#define SEND_CSD                 9
-#define STOP_TRANSMISSION        12
-#define SEND_STATUS              13
-#define SET_BLOCK_LEN            16
-#define READ_SINGLE_BLOCK        17
-#define READ_MULTIPLE_BLOCKS     18
-#define WRITE_SINGLE_BLOCK       24
-#define WRITE_MULTIPLE_BLOCKS    25
-#define ERASE_BLOCK_START_ADDR   32
-#define ERASE_BLOCK_END_ADDR     33
-#define ERASE_SELECTED_BLOCKS    38
-#define SD_SEND_OP_COND			 41   //ACMD
-#define APP_CMD					 55
-#define READ_OCR				 58
-#define CRC_ON_OFF               59
+
+//these are just because many documentation on internet use CMD instead of command name
+#define CMD0  0
+#define CMD1  1
+#define CMD8  8
+#define CMD9  9
+#define CMD16 16
+#define CMD17 17
+#define CMD18 18
+#define CMD24 24
+#define CMD25 25
+#define CMD32 32
+#define CMD33 33
+#define CMD41 41
+#define CMD55 55
+#define CMD58 58
+#define CMD59 59
+
+#define GO_IDLE_STATE            CMD0
+#define SEND_OP_COND             CMD1
+#define SEND_IF_COND		     CMD8
+#define SEND_CSD                 CMD9
+#define SET_BLOCK_LEN            CMD16
+#define READ_SINGLE_BLOCK        CMD17
+#define READ_MULTIPLE_BLOCKS     CMD18
+#define WRITE_SINGLE_BLOCK       CMD24
+#define WRITE_MULTIPLE_BLOCKS    CMD25
+#define ERASE_BLOCK_START_ADDR   CMD32
+#define ERASE_BLOCK_END_ADDR     CMD33
+#define SD_SEND_OP_COND			 CMD41
+#define APP_CMD					 CMD55
+#define READ_OCR				 CMD58
+#define CRC_ON_OFF               CMD59
 
 #define SD_ejected()             bit_is_set(SD_PIN,SD_EJECT)
-#define SD_select_card()         /*clear_bit(SD_PORT,SD_CS)*/
-#define SD_unselect_card()       /*set_bit(SD_PORT,SD_CS)*/
+#define SD_select_card()         clear_bit(SD_PORT,SD_CS)
+#define SD_unselect_card()       set_bit(SD_PORT,SD_CS)
 
 extern unsigned long lastBlockRead;
 extern unsigned char SD_version, SDHC_flag, *buffer, SD_speed;

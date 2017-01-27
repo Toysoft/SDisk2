@@ -1,11 +1,8 @@
 ﻿/*------------------------------------
-
 SDISK II LCD Firmware
-
 2010.11.11 by Koichi Nishida
 2012.01.26 by Fábio Belavenuto
 2015.07.02 by Alexandre Suaide
-
 -------------------------------------
 */
 
@@ -24,19 +21,15 @@ Added support for a 16x2 LCD
 
 /*
 This is a part of the firmware for DISK II emulator by Nishida Radio.
-
 Copyright (C) 2010 Koichi NISHIDA
 email to Koichi NISHIDA: tulip-house@msf.biglobe.ne.jp
-
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3 of the License.
-
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
-
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
@@ -133,6 +126,7 @@ PROGMEM const char ERM3[]     = "Boot sector   ";
 PROGMEM const char ERM4[]     = "Not FAT16/32  ";
 PROGMEM const char ERM5[]     = "Cluster < 32kB";
 PROGMEM const char ERM6[]     = "Missing MBR   ";
+PROGMEM const char ERM7[]     = "SD Block ERROR";
 PROGMEM const char ERMC[]     = "Code: ";
 PROGMEM const char MSHC[]     = "   SDHC card  ";
 PROGMEM const char MSSD[]     = "Normal SD card";
@@ -201,9 +195,9 @@ int main(void)
 					}
 					
 					if (((sectors[0]==sector)&&(tracks[0]==trk)) || ((sectors[1]==sector)&&(tracks[1]==trk)) ||
-					    ((sectors[2]==sector)&&(tracks[2]==trk)) || ((sectors[3]==sector)&&(tracks[3]==trk)) ||
-					    ((sectors[4]==sector)&&(tracks[4]==trk))
-					) writeBackSub();				
+					((sectors[2]==sector)&&(tracks[2]==trk)) || ((sectors[3]==sector)&&(tracks[3]==trk)) ||
+					((sectors[4]==sector)&&(tracks[4]==trk))
+					) writeBackSub();
 					
 					// Timing is an issue here. This is the reason I copied explicitly the conversion from cluster to block
 					// instead of using getCluster() method. I also did bit shift instead of multiplications to make it faster.
@@ -221,21 +215,21 @@ int main(void)
 }
 void display_sd_ejected()
 {
-		lcd_clear();
-		#ifdef _LCD_
-		lcd_gotoxy(0,0);
-		lcd_put_p(SDOUT);
-		lcd_gotoxy(1,1);
-		lcd_put_p(EMP);
-		#endif
-		#ifdef _LCD_NOKIA_
-		lcd_gotoxy(15,1);
-		lcd_put_p(ERR);
-		lcd_gotoxy(0,3);
-		lcd_put_p(SDOUT);
-		#endif
-	    do {} while(SD_ejected());
-		return;
+	lcd_clear();
+	#ifdef _LCD_
+	lcd_gotoxy(0,0);
+	lcd_put_p(SDOUT);
+	lcd_gotoxy(1,1);
+	lcd_put_p(EMP);
+	#endif
+	#ifdef _LCD_NOKIA_
+	lcd_gotoxy(15,1);
+	lcd_put_p(ERR);
+	lcd_gotoxy(0,3);
+	lcd_put_p(SDOUT);
+	#endif
+	do {} while(SD_ejected());
+	return;
 }
 void init_sd(char splash)
 {
@@ -256,22 +250,23 @@ void init_sd(char splash)
 	{
 		lcd_clear();
 		#ifdef _LCD_
-		  lcd_gotoxy(0,0);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,1);
+		lcd_gotoxy(0,0);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-		  lcd_gotoxy(15,1);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,3);
-		#endif  
+		lcd_gotoxy(15,1);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,3);
+		#endif
 		if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
-		else if (errorCode==5) lcd_put_p(ERM5); 
+		else if (errorCode==5) lcd_put_p(ERM5);
 		else if (errorCode==6) lcd_put_p(ERM6);
-		else { lcd_put_p(ERMC); lcd_put_i(errorCode);} 
+		else if (errorCode==7) lcd_put_p(ERM7);
+		else { lcd_put_p(ERMC); lcd_put_i(errorCode);}
 		while(1)
 		{
 			inited = 0;
@@ -281,15 +276,16 @@ void init_sd(char splash)
 	if(splash)
 	{
 		lcd_clear();
-		#ifdef _LCD_ 
-		  lcd_gotoxy(1,0);
+		#ifdef _LCD_
+		lcd_gotoxy(1,0);
 		#endif
 		#ifdef _LCD_NOKIA_
-		  lcd_gotoxy(0,1);
+		lcd_gotoxy(0,1);
 		#endif
 		if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSHC);
-		else if(splash) lcd_put_p(MSSD);
+		else lcd_put_p(MSSD);
 		SD_select_card();
+		_delay_ms(500);
 	}
 	
 	ok = FAT_init();
@@ -297,26 +293,27 @@ void init_sd(char splash)
 	{
 		lcd_clear();
 		#ifdef _LCD_
-		  lcd_gotoxy(0,0);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,1);
+		lcd_gotoxy(0,0);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-		  lcd_gotoxy(15,1);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,3);
-		#endif  
+		lcd_gotoxy(15,1);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,3);
+		#endif
 		if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
 		else if (errorCode==5) lcd_put_p(ERM5);
 		else if (errorCode==6) lcd_put_p(ERM6);
-		else { lcd_put_p(ERMC); lcd_put_i(errorCode);} 
+		else if (errorCode==7) lcd_put_p(ERM7);
+		else { lcd_put_p(ERMC); lcd_put_i(errorCode);}
 		while(1)
 		{
 			inited = 0;
-			if(SD_ejected()) return; 
+			if(SD_ejected()) return;
 		};
 	}
 	
@@ -325,14 +322,14 @@ void init_sd(char splash)
 		errorCode = 5;
 		lcd_clear();
 		#ifdef _LCD_
-		  lcd_gotoxy(0,0);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,1);
+		lcd_gotoxy(0,0);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-		  lcd_gotoxy(15,1);
-		  lcd_put_p(ERR);
-		  lcd_gotoxy(0,3);
+		lcd_gotoxy(15,1);
+		lcd_put_p(ERR);
+		lcd_gotoxy(0,3);
 		#endif
 		lcd_put_p(ERM5);
 		while(1)
@@ -345,11 +342,11 @@ void init_sd(char splash)
 	if(splash)
 	{
 		#ifdef _LCD_
-		  lcd_gotoxy(0,1);
+		lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-		  //lcd_border();
-		  lcd_gotoxy(9,4);
+		//lcd_border();
+		lcd_gotoxy(9,4);
 		#endif
 		lcd_put_p(PART);
 		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
@@ -373,19 +370,19 @@ void init(char splash)
 	PORTC = 0;
 	PORTD = 0;
 	
-	// configuração do LED 
+	// configuração do LED
 	set_bit(SD_LED_PORTD,SD_LED);
 	set_bit(SD_LED_PORT,SD_LED); // LED ligado
-		
+	
 	// configuração das portas do LCD da SDISK original
 	#ifdef _LCD_
-		DDRC = 0b00111010;  /* PC1 = READ PULSE/LCD D4, PC3 = WRITE PROTECT/LCD D5, PC4 = LCD RS, PC5 = LCD E */
-		DDRD = 0b00110010;  /* PD1 = SD CS, PD4 = SD DI/LCD D6, PD5 = SD SCK/LCD D7 */
-		PORTC = 0b00000010; /* PC4=0 - LCD RS, PC5=0 - LCD Desabilitado */
-		PORTD = 0b00000010; /* PD1=0 - SD Desabilitado */
+	DDRC = 0b00111010;  /* PC1 = READ PULSE/LCD D4, PC3 = WRITE PROTECT/LCD D5, PC4 = LCD RS, PC5 = LCD E */
+	DDRD = 0b00110010;  /* PD1 = SD CS, PD4 = SD DI/LCD D6, PD5 = SD SCK/LCD D7 */
+	PORTC = 0b00000010; /* PC4=0 - LCD RS, PC5=0 - LCD Desabilitado */
+	PORTD = 0b00000010; /* PD1=0 - SD Desabilitado */
 	#endif
 	
-	// configuração da interface com o Apple 
+	// configuração da interface com o Apple
 	
 	set_bit(DDRC, 1);
 	set_bit(DDRC, 3);
@@ -418,18 +415,18 @@ void init(char splash)
 		lcd_clear();
 		lcd_gotoxy(0,0);
 		#ifdef _LCD_
-			lcd_put_p(SPLASH1);
-			lcd_gotoxy(0,1);
-			lcd_put_p(SPLASH2);
+		lcd_put_p(SPLASH1);
+		lcd_gotoxy(0,1);
+		lcd_put_p(SPLASH2);
 		#endif
 		#ifdef _LCD_NOKIA_
-			lcd_border();
-			lcd_gotoxy(18,1);
-			lcd_put_p(SPLASH1);
-			lcd_gotoxy(3,2);
-			lcd_put_p(SPLASH2);
-			lcd_gotoxy(3,4);
-			lcd_put_p(VERSION);
+		lcd_border();
+		lcd_gotoxy(18,1);
+		lcd_put_p(SPLASH1);
+		lcd_gotoxy(3,2);
+		lcd_put_p(SPLASH2);
+		lcd_gotoxy(3,4);
+		lcd_put_p(VERSION);
 		#endif
 		_delay_ms(1000);
 	}
@@ -478,10 +475,10 @@ void verify_status(void)
 				while (down_is_pressed());  // enter button pushed !
 				cli();
 				#ifdef _LCD_
-				  set_speed();
+				set_speed();
 				#endif
 				#ifdef _LCD_NOKIA_
-				  setup();
+				setup();
 				#endif
 				if(SD_ejected()) return;
 				find_previous_nic();
@@ -508,7 +505,7 @@ void verify_status(void)
 				{
 					TIMSK0 |= (1<<TOIE0);
 					EIMSK |= (1<<INT0);
-				}				
+				}
 				sei();
 			}
 		}
@@ -539,10 +536,10 @@ void set_contrast()
 		lastBlockRead = 0;
 		struct dir_Structure* config_file = getFile(id_of_config_file);
 		unsigned long cluster;
-						
+		
 		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
 		else cluster = (unsigned long)config_file->firstClusterLO;
-						
+		
 		SD_readSingleBlock(getSector(cluster));
 		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
 		if(config->checksum == CHECKSUM_CONFIG)
@@ -558,7 +555,7 @@ void set_contrast()
 	icons(4,5,3);
 	
 	lcd_gotoxy(0,2);
-	lcd_put_p(VALUE);	
+	lcd_put_p(VALUE);
 	lcd_put_i(contrast);
 	
 	unsigned char old_contrast = contrast;
@@ -658,7 +655,7 @@ void setup()
 	lcd_underline();
 	lcd_put_p(SETUP);
 	lcd_underline();
-	icons(4,5,3);	
+	icons(4,5,3);
 	
 	unsigned char option = 1;
 	lcd_gotoxy(0,2);
@@ -684,7 +681,7 @@ void setup()
 				lcd_inverse();
 				lcd_gotoxy(0,3);
 				lcd_put_p(SET2);
-				lcd_inverse();			
+				lcd_inverse();
 			}
 		}
 		if(up_is_pressed())
@@ -700,7 +697,7 @@ void setup()
 				lcd_inverse();
 				lcd_put_p(SET1);
 				lcd_inverse();
-				lcd_gotoxy(0,3);				
+				lcd_gotoxy(0,3);
 				lcd_put_p(SET2);
 			}
 		}
@@ -713,7 +710,7 @@ void setup()
 			return;
 		}
 	}
-		
+	
 }
 #endif
 void set_speed()
@@ -744,12 +741,12 @@ void set_speed()
 		if(SD_speed!=old_speed)
 		{
 			#ifdef _LCD_
-			  lcd_gotoxy(0,1);
-			  lcd_put_p(SPE0);
+			lcd_gotoxy(0,1);
+			lcd_put_p(SPE0);
 			#endif
 			#ifdef _LCD_NOKIA_
-			  lcd_gotoxy(0,2);
-			  lcd_put_p(VALUE);
+			lcd_gotoxy(0,2);
+			lcd_put_p(VALUE);
 			#endif
 			
 			lcd_put_i(SD_speed);
@@ -812,7 +809,7 @@ void set_speed()
 void select_nic()
 {
 	int i = 0, j =0, k =0;
-	char name1[8]; 
+	char name1[8];
 	nfiles = 0;
 	buffer = &writeData[0][0];
 	files_id = &writeData[2][0];
@@ -820,20 +817,20 @@ void select_nic()
 	buffClear();
 	
 	#ifdef _LCD_NOKIA_
-	  lcd_underline();
+	lcd_underline();
 	#endif
 	lcd_gotoxy(0,0);
 	lcd_put_p(MSG7);
 	lcd_gotoxy(0,1);
 	#ifdef _LCD_NOKIA_
-	  lcd_underline();
-	  icons(4,5,3);
-	  for(i= 1;i<=4;i++) 
-	  {
-		  lcd_gotoxy(0,i);
-	      lcd_put_p(EMP);
-	  }
-	  lcd_gotoxy(0,2);
+	lcd_underline();
+	icons(4,5,3);
+	for(i= 1;i<=4;i++)
+	{
+		lcd_gotoxy(0,i);
+		lcd_put_p(EMP);
+	}
+	lcd_gotoxy(0,2);
 	#endif
 	lcd_put_p(MSGC);
 	
@@ -850,24 +847,24 @@ void select_nic()
 		}
 		i++;
 	} while (nfiles < MAXFILES && i<MAXFILES*2);
-		
+	
 	if(nfiles == 0)
 	{
 		#ifdef _LCD_
-  			lcd_gotoxy(0,1);
+		lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-			lcd_gotoxy(0,2);
+		lcd_gotoxy(0,2);
 		#endif
 		lcd_put_p(MSG8);
 		return;
 	}
 	
 	#ifdef _LCD_
-		lcd_gotoxy(0,1);
+	lcd_gotoxy(0,1);
 	#endif
 	#ifdef _LCD_NOKIA_
-		lcd_gotoxy(0,2);
+	lcd_gotoxy(0,2);
 	#endif
 	lcd_put_p(MSGD);
 	
@@ -889,7 +886,7 @@ void select_nic()
 				}
 			}
 		}
-	}	
+	}
 	
 	int index = 0;
 	for(i = 0; i<nfiles;i++) if(selected_file_id==files_id[i]) index = i;
@@ -935,19 +932,19 @@ void select_nic()
 			index_old = index;
 			struct dir_Structure *file = getFile(files_id[index]);
 			#ifdef _LCD_
-			  lcd_gotoxy(0,1);
-			  if(is_a_dir(file)) lcd_put_s("[");
+			lcd_gotoxy(0,1);
+			if(is_a_dir(file)) lcd_put_s("[");
 			#endif
 			#ifdef _LCD_NOKIA_
-			  lcd_gotoxy(0,2);
-			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
+			lcd_gotoxy(0,2);
+			if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
 			#endif
 			for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
 			#ifdef _LCD_
-			  if(is_a_dir(file)) lcd_put_s("]");
+			if(is_a_dir(file)) lcd_put_s("]");
 			#endif
 			lcd_put_p(EMP);
-		}	
+		}
 	}
 	
 }
@@ -963,12 +960,12 @@ void find_previous_nic()
 	do
 	{
 		struct dir_Structure *file = getFile(i);
-		if(file) 
+		if(file)
 		{
 			if(file->name[0]== 0x00) break; // last file on directory
-						
+			
 			// save pointer of first NIC found, just in case the config file is not found
-			if(is_a_nic(file) && firstNic == -1) 
+			if(is_a_nic(file) && firstNic == -1)
 			{
 				firstNic = i;
 			}
@@ -980,19 +977,19 @@ void find_previous_nic()
 				unsigned long cluster = 0;
 				if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)file->firstClusterHI<<16 | (unsigned long)file->firstClusterLO;
 				else cluster = (unsigned long)file->firstClusterLO;
-				SD_readSingleBlock(getSector(cluster));				
+				SD_readSingleBlock(getSector(cluster));
 				struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
 				if(config->checksum==CHECKSUM_CONFIG)
 				{
 					SD_speed =config->sd_card_speed;
 					#ifdef _LCD_NOKIA_
-					  lcd_contrast = config->lcd_contrast;
-					  if(lcd_contrast >MAX_CONTRAST) lcd_contrast = 40;
-					  if(lcd_contrast<MIN_CONTRAST) lcd_contrast = 40;
-					  lcd_config();
-					  SD_select_card();
-					#endif  
-										
+					lcd_contrast = config->lcd_contrast;
+					if(lcd_contrast >MAX_CONTRAST) lcd_contrast = 40;
+					if(lcd_contrast<MIN_CONTRAST) lcd_contrast = 40;
+					lcd_config();
+					SD_select_card();
+					#endif
+					
 					// set directory
 					FAT_sectorOfCurrentDirectory = config->directory_of_last_mounted_nic;
 					unsigned int tmp = config->id_of_last_mounted_nic;
@@ -1005,21 +1002,21 @@ void find_previous_nic()
 							break;
 						}
 						else cd(0);
-					}		
+					}
 					else cd(0);
-				}	
+				}
 				// If it gets here the config file does not point to a valid NIC. Get back to the root directory and keep going
-				cd(0);	
+				cd(0);
 				// breaks if there is a valid NIC
-				if(firstNic!=-1) break;	
-			}			
+				if(firstNic!=-1) break;
+			}
 		}
 		i++;
 		
 	} while (i<MAXFILES*2);
 	
 	if(firstNic==-1) inited = 0;
-	else 
+	else
 	{
 		struct dir_Structure *file = getFile(firstNic);
 		mount_nic_image(firstNic,file);
@@ -1056,7 +1053,7 @@ void create_config_file()
 	{
 		struct dir_Structure *file = anyFile(i);
 		if(file)
-		{	
+		{
 			// get first deleted of first empty
 			if(((file->name[0] == 0xe5) || (file->name[0] == 0x00)) && (file->attrib != 0xf)  )
 			{
@@ -1113,29 +1110,29 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	if(!file) return 0;
 	
 	#ifdef _LCD_
-	  lcd_gotoxy(0,0);
-	  lcd_put_p(NIC);
-	  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
-	  lcd_put_p(EMP);
-	  lcd_gotoxy(0,1);
-	  lcd_put_p(EMP);
-	  lcd_gotoxy(0,1);
-	  lcd_put_p(SPE0);
-	  lcd_put_i(SD_speed);
+	lcd_gotoxy(0,0);
+	lcd_put_p(NIC);
+	for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+	lcd_put_p(EMP);
+	lcd_gotoxy(0,1);
+	lcd_put_p(EMP);
+	lcd_gotoxy(0,1);
+	lcd_put_p(SPE0);
+	lcd_put_i(SD_speed);
 	#endif
 	#ifdef _LCD_NOKIA_
-	  lcd_clear();
-	  lcd_gotoxy(0,0);
-	  lcd_underline();
-	  lcd_put_p(NIC);
-	  lcd_gotoxy(53,0);
-	  if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
-	  else lcd_put_p(FAT1);
-	  lcd_underline();
-	  icons(0,1,2);
-	  lcd_gotoxy(0,2);
-	  lcd_icon(1);
-	  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+	lcd_clear();
+	lcd_gotoxy(0,0);
+	lcd_underline();
+	lcd_put_p(NIC);
+	lcd_gotoxy(53,0);
+	if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
+	else lcd_put_p(FAT1);
+	lcd_underline();
+	icons(0,1,2);
+	lcd_gotoxy(0,2);
+	lcd_icon(1);
+	for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
 	#endif
 	
 	selected_file_id = file_id;
@@ -1181,7 +1178,7 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 		
 		if(FAT_partitionType == PARTITION_TYPE_FAT32) cluster = (unsigned long)config_file->firstClusterHI<<16 | (unsigned long)config_file->firstClusterLO;
 		else cluster = (unsigned long)config_file->firstClusterLO;
-			
+		
 		SD_readSingleBlock(getSector(cluster));
 		struct Sdisk_config_structure *config = (struct Sdisk_config_structure *)buffer;
 		config->checksum = CHECKSUM_CONFIG;
@@ -1201,7 +1198,7 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	}
 
 	// restore point to the current directory
-	FAT_sectorOfCurrentDirectory = current_dir;	
+	FAT_sectorOfCurrentDirectory = current_dir;
 
 	bitbyte = 0;
 	readPulse = 0;
@@ -1309,7 +1306,7 @@ void writeBackSub2(unsigned char bn, unsigned char sc, unsigned char track)
 	SPI_send_byte_fast(0xff);
 
 	// data
-	for (i = 0; i < 349; i++) 
+	for (i = 0; i < 349; i++)
 	{
 		c = writeData[bn][i];
 		for (d = 0b10000000; d; d >>= 1)
@@ -1324,7 +1321,7 @@ void writeBackSub2(unsigned char bn, unsigned char sc, unsigned char track)
 		}
 	}
 	SPI_PORT = NCLKNDINCS;
-	for (i = 0; i < 14 * 8; i++) 
+	for (i = 0; i < 14 * 8; i++)
 	{
 		SPI_PORT = NCLK_DINCS;
 		SPI_PORT = _CLK_DINCS;
@@ -1409,4 +1406,3 @@ void buffClear()
 	for (i=0; i<BUF_NUM; i++) for (j=0; j<350; j++) writeData[i][j]=0;
 	for (i=0; i<BUF_NUM; i++) sectors[i]=tracks[i]=0xff;
 }
-

@@ -69,6 +69,7 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define SPI_CLOCK 5
 	#define SPI_MOSI  4
 	#define SPI_CS    1
+	#define SD_EJECT  3
 	#define SPI_DDR   DDRD
 	#define SPI_PIN   PIND
 	#define SPI_PORT  PORTD
@@ -127,6 +128,7 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define SPI_CLOCK 5
 	#define SPI_MOSI  4
 	#define SPI_CS    1
+	#define SD_EJECT  3
 	#define SPI_DDR   DDRD
 	#define SPI_PIN   PIND
 	#define SPI_PORT  PORTD
@@ -182,24 +184,26 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	// SPI (SD SLOT) pins
 	#define SPI_MISO  0
 	#define SPI_CLOCK 5
-	#define SPI_MOSI  4
-	#define SPI_CS    1
+	#define SPI_MOSI  3 //DI
+	#define SPI_CS    4
+	#define SPI_SW	  1
+	#define SD_EJECT  SPI_SW
 	#define SPI_DDR   DDRD
 	#define SPI_PIN   PIND
 	#define SPI_PORT  PORTD
-	#define _CLK_DI_CS	0b00110010
-	#define _CLKNDI_CS	0b00100010
-	#define NCLK_DI_CS	0b00010010
-	#define NCLKNDI_CS	0b00000010
-	#define _CLK_DINCS	0b00110000
+	#define _CLK_DI_CS	0b00111000
+	#define _CLKNDI_CS	0b00110000
+	#define NCLK_DI_CS	0b00011000
+	#define NCLKNDI_CS	0b00010000
+	#define _CLK_DINCS	0b00101000
 	#define _CLKNDINCS	0b00100000
-	#define NCLK_DINCS	0b00010000
+	#define NCLK_DINCS	0b00001000
 	#define NCLKNDINCS	0b00000000
 
 	// SD LED
 	#define SD_LED_PORT PORTB
 	#define SD_LED_PORTD DDRB
-	#define SD_LED 4
+	#define SD_LED 5
 
 	// BOTOES
 	#define ENTER_PORT       PIND
@@ -207,14 +211,11 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define UP_PORT          PINB
 	#define ENTER_BIT        DDD6
 	#define DOWN_BIT         DDD7
-	#define UP_BIT           DDB5
+	#define UP_BIT           DDB4
 
 	// PINOS PARA A DISK II - APPLE
 	#define DISKII_PIN       PINC
 	#define DISKII_ENABLE    DDC0
-
-
 #endif
-
 
 #endif /* CONFIG_H_ */

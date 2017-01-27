@@ -56,115 +56,109 @@ unsigned char shift;
 unsigned char SD_init(void)
 {
 	
+	errorCode = 0;
 	
-	unsigned char i, response;
-	unsigned int retry = 0 ;
-	SD_speed = 5;
-	
-	SPI_init();
-	SPI_slow();
-	if(SD_ejected()) return 0;
-	
-	SD_led_on();
-	SD_select_card();
-	lastBlockRead = 9999;
-	for(i = 0; i < 100; ++i)  SPI_clock_pulse_slow();
-
-	SPI_transmit (0xff);
-	SPI_transmit (0xff);
-	
-	do
-	{
-		response = SD_sendCommand(GO_IDLE_STATE, 0); //send 'reset & go idle' command
-		retry++;
-		if (retry>0x7ff)
-		{
-			SD_led_off();
-			SD_unselect_card();
-			errorCode = 1;
-			return 0;   //time out, card not detected
-		}
-	} while (response != 0x01);
-	
-	SPI_transmit (0xff);
-	SPI_transmit (0xff);
+		unsigned char i, response;
+		unsigned int retry = 0 ;
+		SD_speed = 5;
 		
-	retry = 0;
-	SD_version = 2; //default set to SD compliance with ver2.x;
-	unsigned long ARG = 0x40000000;	
-	//this may change after checking the next command
-	do
-	{
-		response = SD_sendCommand(SEND_IF_COND,0x000001AA); //Check power supply status, mendatory for SDHC card
-		retry++;
-		if(retry>0x1fe)
-		{
-			SD_version = 1;
-			ARG = 0;
-			break;
-		} //time out
-	} while (response != 0x01);
-
-	SPI_transmit (0xff);
-	SPI_transmit (0xff);		
-	
-	retry = 0;
-	do
-	{
-		response = SD_sendCommand(APP_CMD,0); //CMD55, must be sent before sending any ACMD command
-		response = SD_sendCommand(SD_SEND_OP_COND,ARG); //ACMD41
-		retry++;
-		if(retry>0x1fe)	break;	
-	} while (response != 0x00);
+		SPI_init();
+		SPI_slow();
+		if(SD_ejected()) return 0;
 		
-	// failed ACMD41 will try CMD1  for MMC 
-	if(response != 0x00 && ARG == 0)
-	{
+		SD_led_on();
+		SD_unselect_card();
+		lastBlockRead = 9999;
+		for(i = 0; i < 100; ++i)  SPI_clock_pulse_slow();
+		SD_select_card();
+
+		SPI_transmit (0xff);
+		SPI_transmit (0xff);
+		
+		do
+		{
+			response = SD_sendCommand(CMD0, 0); //send 'reset & go idle' command
+			retry++;
+			if (retry>0x7ff)
+			{
+				SD_led_off();
+				SD_unselect_card();
+				errorCode = 1;
+				return 0;   //time out, card not detected
+			}
+		} while (response != 0x01);
+		
+		SPI_transmit (0xff);
+		SPI_transmit (0xff);
+		
+		retry = 0;
+		SD_version = 2; //default set to SD compliance with ver2.x;
+		unsigned long ARG = 0x40000000;
+		//this may change after checking the next command
+		do
+		{
+			response = SD_sendCommand(CMD8,0x000001AA); //Check power supply status, mandatory for SDHC card
+			retry++;
+			if(retry>0x1fe)
+			{
+				SD_version = 1;
+				ARG = 0;
+				break;
+			} //time out
+		} while (response != 0x01);
+
+		SPI_transmit (0xff);
+		SPI_transmit (0xff);
+		
 		retry = 0;
 		do
 		{
-
-			response = SD_sendCommand(APP_CMD,0); //CMD55, must be sent before sending any ACMD command
-			response = SD_sendCommand(SEND_OP_COND,0x00000000); //CMD1
+			response = SD_sendCommand(CMD55,0); //CMD55, must be sent before sending any ACMD command
+			response = SD_sendCommand(CMD41,ARG); //ACMD41
 			retry++;
-			if(retry>0x1fe)	break;
+			if(retry>0x1fe)	
+			{
+				errorCode = 8;
+				return 0;
+			}
 		} while (response != 0x00);
-	}
 
-	if(response != 0x00)
-	{
+		if(response != 0x00)
+		{
+			SD_led_off();
+			SD_unselect_card();
+			errorCode = 2;
+			return 0;  //time out, card initialization failed
+		}
+		
+		retry = 0;
+		SDHC_flag = 0;
+		shift = 9;
+		
+		if (SD_version == SD_RAW_SPEC_SDHC)
+		{
+			SDHC_flag = 1;
+			shift = 0;
+			do
+			{
+				SPI_transmit (0xff);
+				response = SD_sendCommand(READ_OCR,0);
+				retry++;
+				if(retry>0xfe)
+				{
+					break;
+					errorCode = 7;
+					return 0;
+				} //time out
+				
+			} while (response != 0x00);
+		}
+		
+		SD_sendCommand(CRC_ON_OFF, 0); //disable CRC; deafault - CRC disabled in SPI mode
+		SD_setBlockSize(512); //set block size to 512; default size is 512
 		SD_led_off();
 		SD_unselect_card();
-		errorCode = 2;
-		return 0;  //time out, card initialization failed		
-	}
-	
-	retry = 0;
-	SDHC_flag = 0;
-	shift = 9;
-	
-	if (SD_version == SD_RAW_SPEC_SDHC)
-	{
-		SDHC_flag = 1;
-		shift = 0;
-		do
-		{
-			SPI_transmit (0xff);
-			response = SD_sendCommand(READ_OCR,0);
-			retry++;
-			if(retry>0xfe)
-			{
-				break;
-			} //time out
-			
-		} while (response != 0x00);
-	}
-	
-	//SD_sendCommand(CRC_ON_OFF, OFF); //disable CRC; deafault - CRC disabled in SPI mode
-	SD_setBlockSize(512); //set block size to 512; default size is 512
-	SD_led_off();
-	SD_unselect_card();
-	return 1; //successful return
+		return 1; //successful return
 }
 
 unsigned char SD_getRespFast(void)

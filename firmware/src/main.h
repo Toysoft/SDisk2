@@ -72,6 +72,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #define MAXNIC           4
 
+#define MAXNIC           4
+
 #define enter_is_pressed() bit_is_clear(ENTER_PORT,ENTER_BIT)
 #define down_is_pressed()  bit_is_clear(DOWN_PORT,DOWN_BIT)
 #define up_is_pressed()    bit_is_clear(UP_PORT,UP_BIT)
