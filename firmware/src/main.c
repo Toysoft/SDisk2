@@ -285,7 +285,7 @@ void init_sd(char splash)
 		if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSHC);
 		else lcd_put_p(MSSD);
 		SD_select_card();
-		_delay_ms(500);
+		_delay_ms(1000);
 	}
 	
 	ok = FAT_init();

@@ -99,15 +99,16 @@ unsigned char SD_init(void)
 		{
 			response = SD_sendCommand(CMD8,0x1AA); //Check power supply status, mandatory for SDHC card
 			retry++;
-			if((response & 0xFFF) == 0x1AA)
+			if((response & 0xFF) == 0xAA)
 			{
 				SD_version = SD_RAW_SPEC_2;
-				ARG = 0;
+				ARG = 0x40000000;
 				break;
 			}
 			if(response == 0x01)
 			{
-				SD_version = SD_RAW_SPEC_SDHC;
+				SD_version = SD_RAW_SPEC_2;
+				//SD_version = SD_RAW_SPEC_SDHC;
 				ARG = 0x40000000;
 				break;
 			}
@@ -117,7 +118,7 @@ unsigned char SD_init(void)
 				ARG = 0;
 				break;
 			} //time out
-		} while ((response&0xFFF) != 0x1AA);
+		} while (((response&0xFF) != 0xAA) || response != 0x01);
 
 		SPI_transmit (0xff);
 		SPI_transmit (0xff);
@@ -128,53 +129,30 @@ unsigned char SD_init(void)
 			response = SD_sendCommand(CMD55,0); //CMD55, must be sent before sending any ACMD command
 			response = SD_sendCommand(CMD41,ARG); //ACMD41
 			retry++;
-			if(retry == 256)
-			{
-				if(SD_version == SD_RAW_SPEC_SDHC)
-				{
-					SD_version = SD_RAW_SPEC_2;
-					ARG = 0;
-				}
-				else
-				{
-					SD_version = SD_RAW_SPEC_SDHC;
-					ARG = 0x40000000;
-				}
-			}
 			if(retry > 512)	
 			{
-				errorCode = 8;
+				errorCode = 2;
+				SD_led_off();
+				SD_unselect_card();
 				return 0;
 			}
 		} while (response != 0x00);
-
-		if(response != 0x00)
-		{
-			SD_led_off();
-			SD_unselect_card();
-			errorCode = 2;
-			return 0;  //time out, card initialization failed
-		}
 		
 		retry = 0;
 		SDHC_flag = 0;
 		shift = 9;
 		
-		if (SD_version == SD_RAW_SPEC_SDHC)
-		{
-			SDHC_flag = 1;
-			shift = 0;
+		if (SD_version == SD_RAW_SPEC_2)
+		{		
 			do
 			{
 				SPI_transmit (0xff);
-				response = SD_sendCommand(READ_OCR,0);
+				response = SD_sendCommand(CMD58,0); // check for SDHC
 				retry++;
-				if(retry>0xfe)
+				if(retry>100)
 				{
 					break;
-					errorCode = 7;
-					return 0;
-				} //time out
+				} 
 				
 			} while (response != 0x00);
 		}
@@ -266,12 +244,12 @@ unsigned char SD_sendCommand(unsigned char cmd, unsigned long arg)
 	while((response = SPI_receive()) == 0xff) //wait response
 	  if(retry++ > 0xfe) break; //time out error
 	
-	if(response == 0x00 && cmd == 58)  //checking response of CMD58
+	if(response == 0x00 && cmd == CMD58)  //checking response of CMD58
 	{
 		status = SPI_receive() & 0x40;     //first byte of the OCR register (bit 31:24)
 		shift = 0;
-		if(status == 0x40) {SDHC_flag = 1; shift = 0;}  //we need it to verify SDHC card
-		else { SDHC_flag = 0; shift = 9;}
+		if(status == 0x40) {SDHC_flag = 1; shift = 0; SD_version=SD_RAW_SPEC_SDHC;}  //we need it to verify SDHC card
+		else { SDHC_flag = 0; shift = 9; SD_version = SD_RAW_SPEC_2;}
 		
 		SPI_receive(); //remaining 3 bytes of the OCR register are ignored here
 		SPI_receive(); //one can use these bytes to check power supply limits of SD
