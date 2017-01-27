@@ -97,23 +97,23 @@ unsigned char SD_init(void)
 		//this may change after checking the next command
 		do
 		{
-			response = SD_sendCommand(CMD8,0x000001AA); //Check power supply status, mandatory for SDHC card
+			response = SD_sendCommand(CMD8,0x1AA); //Check power supply status, mandatory for SDHC card
 			retry++;
 			if((response & 0xFFF) == 0x1AA)
 			{
-				SD_version = 1;
+				SD_version = SD_RAW_SPEC_2;
 				ARG = 0;
 				break;
 			}
 			if(response == 0x01)
 			{
-				SD_version = 2;
+				SD_version = SD_RAW_SPEC_SDHC;
 				ARG = 0x40000000;
 				break;
 			}
-			if(retry>0x1fe)
+			if(retry>512)
 			{
-				SD_version = 1;
+				SD_version = SD_RAW_SPEC_1;
 				ARG = 0;
 				break;
 			} //time out
@@ -128,7 +128,20 @@ unsigned char SD_init(void)
 			response = SD_sendCommand(CMD55,0); //CMD55, must be sent before sending any ACMD command
 			response = SD_sendCommand(CMD41,ARG); //ACMD41
 			retry++;
-			if(retry>0x1fe)	
+			if(retry == 256)
+			{
+				if(SD_version == SD_RAW_SPEC_SDHC)
+				{
+					SD_version = SD_RAW_SPEC_2;
+					ARG = 0;
+				}
+				else
+				{
+					SD_version = SD_RAW_SPEC_SDHC;
+					ARG = 0x40000000;
+				}
+			}
+			if(retry > 512)	
 			{
 				errorCode = 8;
 				return 0;
