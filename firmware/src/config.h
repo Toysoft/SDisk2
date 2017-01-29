@@ -91,6 +91,9 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define ENTER_PORT       PIND
 	#define DOWN_PORT        PIND
 	#define UP_PORT          PINB
+	#define ENTER_PORTD      PORTD
+	#define DOWN_PORTD       PORTD
+	#define UP_PORTD         PORTB
 	#define ENTER_BIT        DDD6
 	#define DOWN_BIT         DDD7
 	#define UP_BIT           DDB5
@@ -150,6 +153,9 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define ENTER_PORT       PIND
 	#define DOWN_PORT        PIND
 	#define UP_PORT          PINB
+	#define ENTER_PORTD      PORTD
+	#define DOWN_PORTD       PORTD
+	#define UP_PORTD         PORTB
 	#define ENTER_BIT        DDD6
 	#define DOWN_BIT         DDD7
 	#define UP_BIT           DDB5
@@ -209,6 +215,9 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define ENTER_PORT       PIND
 	#define DOWN_PORT        PIND
 	#define UP_PORT          PINB
+	#define ENTER_PORTD      PORTD
+	#define DOWN_PORTD       PORTD
+	#define UP_PORTD         PORTB
 	#define ENTER_BIT        DDD6
 	#define DOWN_BIT         DDD7
 	#define UP_BIT           DDB4

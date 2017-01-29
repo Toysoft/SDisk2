@@ -1414,7 +1414,7 @@ void buffClear()
 
 void  configButtons()
 {
-	ENTER_PORT |= 1<<(ENTER_BIT);
-	UP_PORT |= 1<<(UP_BIT);
-	DOWN_PORT |= 1<<(DOWN_BIT);
+	ENTER_PORTD |= 1<<(ENTER_BIT);
+	UP_PORTD |= 1<<(UP_BIT);
+	DOWN_PORTD |= 1<<(DOWN_BIT);
 }
