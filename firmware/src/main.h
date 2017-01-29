@@ -113,6 +113,7 @@ void            writeBack();
 void            cancelRead();
 void            buffClear();
 void            set_speed();
+void            configButtons();
 #ifdef _LCD_NOKIA_
 void            set_contrast();
 void            setup();

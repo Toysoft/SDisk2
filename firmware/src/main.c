@@ -435,6 +435,7 @@ void init(char splash)
 void verify_status(void)
 {
 	unsigned int i;
+	configButtons();
 	if (SD_ejected())
 	{
 		for (i = 0; i != 0x500; i++) if (!SD_ejected()) return;
@@ -562,6 +563,7 @@ void set_contrast()
 	unsigned char original_contrast = contrast;
 	while(1)
 	{
+		configButtons();
 		if(contrast!=old_contrast)
 		{
 			lcd_gotoxy(0,2);
@@ -667,6 +669,7 @@ void setup()
 	
 	while(1)
 	{
+		configButtons();
 		if(down_is_pressed())
 		{
 			while(down_is_pressed()){}
@@ -738,6 +741,7 @@ void set_speed()
 	unsigned char original_speed = SD_speed;
 	while(1)
 	{
+		configButtons();
 		if(SD_speed!=old_speed)
 		{
 			#ifdef _LCD_
@@ -893,6 +897,7 @@ void select_nic()
 	int index_old = -1;
 	while(1)
 	{
+		configButtons();
 		if(SD_ejected()) return; // card is removed
 		if(down_is_pressed())
 		{
@@ -984,8 +989,8 @@ void find_previous_nic()
 					SD_speed =config->sd_card_speed;
 					#ifdef _LCD_NOKIA_
 					lcd_contrast = config->lcd_contrast;
-					if(lcd_contrast >MAX_CONTRAST) lcd_contrast = 40;
-					if(lcd_contrast<MIN_CONTRAST) lcd_contrast = 40;
+					if(lcd_contrast > MAX_CONTRAST) lcd_contrast = MAX_CONTRAST;
+					if(lcd_contrast < MIN_CONTRAST) lcd_contrast = MIN_CONTRAST;
 					lcd_config();
 					SD_select_card();
 					#endif
@@ -1405,4 +1410,11 @@ void buffClear()
 	unsigned short j;
 	for (i=0; i<BUF_NUM; i++) for (j=0; j<350; j++) writeData[i][j]=0;
 	for (i=0; i<BUF_NUM; i++) sectors[i]=tracks[i]=0xff;
+}
+
+void  configButtons()
+{
+	ENTER_PORT |= 1<<(ENTER_BIT);
+	UP_PORT |= 1<<(UP_BIT);
+	DOWN_PORT |= 1<<(DOWN_BIT);
 }

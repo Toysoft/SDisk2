@@ -118,7 +118,7 @@ unsigned char SD_init(void)
 				ARG = 0;
 				break;
 			} //time out
-		} while (((response&0xFF) != 0xAA) || response != 0x01);
+		} while (((response&0xFF) != 0xAA) && response != 0x01);
 
 		SPI_transmit (0xff);
 		SPI_transmit (0xff);
