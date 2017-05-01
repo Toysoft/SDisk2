@@ -65,12 +65,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 	#include "lcd_nokia.h"
 #endif
 
+#ifdef _OLED_
+    #include "oled.h"
+#endif
+
 #include "SPI_routines.h"
 #include "SD_routines.h"
 #include "FAT32.h"
-#include "config.h"
-
-#define MAXNIC           4
 
 #define MAXNIC           4
 
@@ -98,7 +99,7 @@ struct Sdisk_config_structure
 
 void            init(char splash);
 void            display_sd_ejected();
-void            init_sd(char splash);
+char            init_sd(char splash);
 void            verify_status();
 void            select_nic();
 void            find_previous_nic();
@@ -114,11 +115,13 @@ void            cancelRead();
 void            buffClear();
 void            set_speed();
 void            configButtons();
-#ifdef _LCD_NOKIA_
+
+#if defined(_LCD_NOKIA_) || defined(_OLED_)
 void            set_contrast();
 void            setup();
 void            icons(unsigned char i1, unsigned char i2, unsigned char i3);
 #endif
+
 int             main(void);
 
 #endif

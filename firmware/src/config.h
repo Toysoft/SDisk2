@@ -174,42 +174,39 @@ for firmware update.
 
 DO NOT CHANGE THIS unless you really know what you are doing
 */
-#ifdef _SDISK_NOKIA_
+#ifdef _SDISK_OLED_
 
-	#define _LCD_NOKIA_
+	#define _OLED_
 
-	// LCD pins
-	#define LCD_PORT         PORTC
-	#define LCD_DDR          DDRC
-	#define LCD_SCE_PIN      5
-	#define LCD_RESET_PIN    VCC
-	#define LCD_DC_PIN       4
-	#define LCD_SDIN_PIN     3
-	#define LCD_SCLK_PIN     1
+	// OLED pins
+	#define SDA_PIN 4
+	#define SDA_PORT PORTC
+    #define SCL_PIN 5
+	#define SCL_PORT PORTC
+	#define SSD1306_ADDRESS 0x3C
 
 	// SPI (SD SLOT) pins
 	#define SPI_MISO  0
 	#define SPI_CLOCK 5
-	#define SPI_MOSI  3 //DI
-	#define SPI_CS    4
-	#define SPI_SW	  1
-	#define SD_EJECT  SPI_SW
+	#define SPI_MOSI  4
+	#define SPI_CS    1
+	#define SD_EJECT  3
 	#define SPI_DDR   DDRD
 	#define SPI_PIN   PIND
 	#define SPI_PORT  PORTD
-	#define _CLK_DI_CS	0b00111000
-	#define _CLKNDI_CS	0b00110000
-	#define NCLK_DI_CS	0b00011000
-	#define NCLKNDI_CS	0b00010000
-	#define _CLK_DINCS	0b00101000
+	#define _CLK_DI_CS	0b00110010
+	#define _CLKNDI_CS	0b00100010
+	#define NCLK_DI_CS	0b00010010
+	#define NCLKNDI_CS	0b00000010
+	#define _CLK_DINCS	0b00110000
 	#define _CLKNDINCS	0b00100000
-	#define NCLK_DINCS	0b00001000
+	#define NCLK_DINCS	0b00010000
 	#define NCLKNDINCS	0b00000000
 
 	// SD LED
 	#define SD_LED_PORT PORTB
 	#define SD_LED_PORTD DDRB
-	#define SD_LED 5
+	#define SD_LED 4
 
 	// BOTOES
 	#define ENTER_PORT       PIND
@@ -220,7 +217,7 @@ DO NOT CHANGE THIS unless you really know what you are doing
 	#define UP_PORTD         PORTB
 	#define ENTER_BIT        DDD6
 	#define DOWN_BIT         DDD7
-	#define UP_BIT           DDB4
+	#define UP_BIT           DDB5
 
 	// PINOS PARA A DISK II - APPLE
 	#define DISKII_PIN       PINC

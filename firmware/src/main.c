@@ -81,7 +81,7 @@ unsigned char  old_trk;
 
 /*                               1234567890123456 */
 #ifdef _LCD_
-PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.4.1";
+PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.0";
 PROGMEM const char SPLASH2[]  = "  Apple ][ BR   ";
 PROGMEM const char NIC[]      = "NIC: ";
 PROGMEM const char EMP[]      = "                ";
@@ -92,6 +92,21 @@ PROGMEM const char MSG7[]     = "Select NIC image";
 PROGMEM const char MSGC[]     = "Building list...";
 PROGMEM const char MSG8[]     = " Nothing here!  ";
 PROGMEM const char MSGD[]     = "Sorting files...";
+PROGMEM const char MSHC[]     = "   SDHC card    ";
+PROGMEM const char MSSD[]     = " Normal SD card ";
+PROGMEM const char ERR[]      = "E R R O R";
+PROGMEM const char ERM1[]     = "SD can't idle ";
+PROGMEM const char ERM2[]     = "SD can't init ";
+PROGMEM const char ERM3[]     = "Boot sector   ";
+PROGMEM const char ERM4[]     = "Not FAT16/32  ";
+PROGMEM const char ERM5[]     = "Cluster < 32kB";
+PROGMEM const char ERM6[]     = "Missing MBR   ";
+PROGMEM const char ERM7[]     = "SD Block ERROR";
+PROGMEM const char ERMC[]     = "Code: ";
+PROGMEM const char PART[]     = "Type: ";
+PROGMEM const char FAT3[]     = "FAT32";
+PROGMEM const char FAT1[]     = "FAT16";
+PROGMEM const char SDOUT[]    = "No SD inserted";
 #define TRX 10
 #define TRY 1
 #endif
@@ -100,7 +115,7 @@ PROGMEM const char MSGD[]     = "Sorting files...";
 /*                               12345678901234 */
 PROGMEM const char SPLASH1[]  = "SDisk ][";
 PROGMEM const char SPLASH2[]  = "Apple ][ - BR";
-PROGMEM const char VERSION[]  = "v. 4.1 (2017)";
+PROGMEM const char VERSION[]  = "v. 5.0 (2017)";
 PROGMEM const char NIC[]      = " NIC          ";
 PROGMEM const char SETUP[]    = " SETUP        ";
 PROGMEM const char EMP[]      = "              ";
@@ -114,11 +129,8 @@ PROGMEM const char MSG7[]     = " SELECT NIC   ";
 PROGMEM const char MSGC[]     = " Building list";
 PROGMEM const char MSG8[]     = " Nothing here!";
 PROGMEM const char MSGD[]     = " Sorting files";
-
-#define TRX 12
-#define TRY 3
-#endif
-
+PROGMEM const char MSHC[]     = "   SDHC card  ";
+PROGMEM const char MSSD[]     = "Normal SD card";
 PROGMEM const char ERR[]      = "E R R O R";
 PROGMEM const char ERM1[]     = "SD can't idle ";
 PROGMEM const char ERM2[]     = "SD can't init ";
@@ -128,16 +140,49 @@ PROGMEM const char ERM5[]     = "Cluster < 32kB";
 PROGMEM const char ERM6[]     = "Missing MBR   ";
 PROGMEM const char ERM7[]     = "SD Block ERROR";
 PROGMEM const char ERMC[]     = "Code: ";
-PROGMEM const char MSHC[]     = "   SDHC card  ";
-PROGMEM const char MSSD[]     = "Normal SD card";
 PROGMEM const char PART[]     = "Type: ";
 PROGMEM const char FAT3[]     = "FAT32";
 PROGMEM const char FAT1[]     = "FAT16";
-
 PROGMEM const char SDOUT[]    = "No SD inserted";
+#define TRX 12
+#define TRY 3
+#endif
 
-
-
+#ifdef _OLED_
+/*                               012345678901234567890*/  
+PROGMEM const char SPLASH1[]  = "SDISK ][ - BRASIL";
+PROGMEM const char VERSION[]  = "version 5.0 (2017)";
+PROGMEM const char NIC[]      = " NIC                 ";
+PROGMEM const char SETUP[]    = " SETUP               ";
+PROGMEM const char EMP[]      = "                     ";
+PROGMEM const char SET1[]     = " Set SD delay        ";
+PROGMEM const char SET2[]     = " Set contrast        ";
+PROGMEM const char VALUE[]    = " Value: ";
+PROGMEM const char CONT[]     = " LCD CONTRAST        ";
+PROGMEM const char DLAY[]     = " SD SELECT DELAY     ";
+PROGMEM const char TRAK[]     = "Track: ";
+PROGMEM const char MSG7[]     = " SELECT NIC          ";
+PROGMEM const char MSGC[]     = " Building list";
+PROGMEM const char MSG8[]     = " Nothing found here! ";
+PROGMEM const char MSGD[]     = " Sorting files ...   ";
+PROGMEM const char MSHC[]     = "SDHC card     ";
+PROGMEM const char MSSD[]     = "Normal SD card";
+PROGMEM const char ERR[]      = "E R R O R";
+PROGMEM const char ERM1[]     = "SD can't idle ";
+PROGMEM const char ERM2[]     = "SD can't init ";
+PROGMEM const char ERM3[]     = "Boot sector   ";
+PROGMEM const char ERM4[]     = "Not FAT16/32  ";
+PROGMEM const char ERM5[]     = "Cluster < 32kB";
+PROGMEM const char ERM6[]     = "Missing MBR   ";
+PROGMEM const char ERM7[]     = "SD Block ERROR";
+PROGMEM const char ERMC[]     = "Code: ";
+PROGMEM const char PART[]     = "Type: ";
+PROGMEM const char FAT3[]     = "FAT32";
+PROGMEM const char FAT1[]     = "FAT16";
+PROGMEM const char SDOUT[]    = "No SD inserted";
+#define TRX 12
+#define TRY 4
+#endif
 
 PROGMEM const char CFG[]  = "SDISKII CFG";
 
@@ -191,7 +236,7 @@ int main(void)
 						lcd_gotoxy(TRX,TRY);
 						lcd_put_p(TRAK);
 						if(trk<10) lcd_put_s(" ");
-						lcd_put_i((unsigned int)trk);
+						lcd_put_i((unsigned int)trk); 
 					}
 					
 					if (((sectors[0]==sector)&&(tracks[0]==trk)) || ((sectors[1]==sector)&&(tracks[1]==trk)) ||
@@ -213,25 +258,37 @@ int main(void)
 		}
 	}
 }
+
 void display_sd_ejected()
 {
-	lcd_clear();
 	#ifdef _LCD_
+	lcd_clear();
 	lcd_gotoxy(0,0);
 	lcd_put_p(SDOUT);
 	lcd_gotoxy(1,1);
 	lcd_put_p(EMP);
 	#endif
+	
 	#ifdef _LCD_NOKIA_
+	lcd_clear();
 	lcd_gotoxy(15,1);
 	lcd_put_p(ERR);
 	lcd_gotoxy(0,3);
 	lcd_put_p(SDOUT);
 	#endif
+
+    #ifdef _OLED_
+	lcd_clear();
+	lcd_gotoxy(37,2);
+	lcd_put_p(ERR);
+	lcd_gotoxy(22,4);
+	lcd_put_p(SDOUT);
+	#endif		
+	
 	do {} while(SD_ejected());
 	return;
 }
-void init_sd(char splash)
+char init_sd(char splash)
 {
 	id_of_config_file = -1;
 	SPI_slow();
@@ -240,7 +297,7 @@ void init_sd(char splash)
 	if(SD_ejected())
 	{
 		display_sd_ejected();
-		return;
+		return 0;
 	}
 	
 	buffer = &writeData[0][0];
@@ -250,16 +307,21 @@ void init_sd(char splash)
 	{
 		lcd_clear();
 		#ifdef _LCD_
-		lcd_gotoxy(0,0);
-		lcd_put_p(ERR);
-		lcd_gotoxy(0,1);
+		  lcd_gotoxy(0,0);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,1);
 		#endif
 		#ifdef _LCD_NOKIA_
-		lcd_gotoxy(15,1);
-		lcd_put_p(ERR);
-		lcd_gotoxy(0,3);
+		  lcd_gotoxy(15,1);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(0,3);
 		#endif
-		if (errorCode==1) lcd_put_p(ERM1);
+		#ifdef _OLED_
+		  lcd_gotoxy(37,2);
+		  lcd_put_p(ERR);
+		  lcd_gotoxy(22,4);
+		#endif
+	    if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
 		else if (errorCode==4) lcd_put_p(ERM4);
@@ -267,23 +329,26 @@ void init_sd(char splash)
 		else if (errorCode==6) lcd_put_p(ERM6);
 		else if (errorCode==7) lcd_put_p(ERM7);
 		else { lcd_put_p(ERMC); lcd_put_i(errorCode);}
-		while(1)
-		{
-			inited = 0;
-			if(SD_ejected()) return;
-		};
+		inited = 0;
+		while(!SD_ejected()){};
+		return 0;
 	}
 	if(splash)
 	{
 		lcd_clear();
 		#ifdef _LCD_
-		lcd_gotoxy(1,0);
+		lcd_gotoxy(0,0);
 		#endif
 		#ifdef _LCD_NOKIA_
 		lcd_gotoxy(0,1);
 		#endif
-		if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSHC);
+		#ifdef _OLED_
+		lcd_gotoxy(0,2);
+		#endif
+
+        if(SD_version==SD_RAW_SPEC_SDHC) lcd_put_p(MSHC);
 		else lcd_put_p(MSSD);
+		
 		SD_select_card();
 		_delay_ms(1000);
 	}
@@ -302,6 +367,12 @@ void init_sd(char splash)
 		lcd_put_p(ERR);
 		lcd_gotoxy(0,3);
 		#endif
+		#ifdef _OLED_
+		lcd_gotoxy(37,2);
+		lcd_put_p(ERR);
+		lcd_gotoxy(22,4);
+		#endif
+
 		if (errorCode==1) lcd_put_p(ERM1);
 		else if (errorCode==2) lcd_put_p(ERM2);
 		else if (errorCode==3) lcd_put_p(ERM3);
@@ -310,11 +381,9 @@ void init_sd(char splash)
 		else if (errorCode==6) lcd_put_p(ERM6);
 		else if (errorCode==7) lcd_put_p(ERM7);
 		else { lcd_put_p(ERMC); lcd_put_i(errorCode);}
-		while(1)
-		{
-			inited = 0;
-			if(SD_ejected()) return;
-		};
+	    inited = 0;
+		while(!SD_ejected()){};
+		return 0;
 	}
 	
 	if((FAT_bytesPerSector*FAT_sectorsPerCluster/1024) < (NIC_FILE_SIZE/FAT_NIC_ELEMS))
@@ -325,18 +394,24 @@ void init_sd(char splash)
 		lcd_gotoxy(0,0);
 		lcd_put_p(ERR);
 		lcd_gotoxy(0,1);
+		lcd_put_p(ERM5);
 		#endif
 		#ifdef _LCD_NOKIA_
 		lcd_gotoxy(15,1);
 		lcd_put_p(ERR);
 		lcd_gotoxy(0,3);
-		#endif
 		lcd_put_p(ERM5);
-		while(1)
-		{
-			inited = 0;
-			if(SD_ejected()) return;
-		};
+		#endif
+		#ifdef _OLED_
+		lcd_gotoxy(37,2);
+		lcd_put_p(ERR);
+		lcd_gotoxy(22,4);
+		lcd_put_p(ERM5);
+		#endif
+		
+		inited = 0;
+		while(!SD_ejected()){};
+		return 0;
 	}
 	
 	if(splash)
@@ -348,15 +423,21 @@ void init_sd(char splash)
 		//lcd_border();
 		lcd_gotoxy(9,4);
 		#endif
+		#ifdef _OLED_
+		lcd_gotoxy(0,4);
+		#endif
+		
 		lcd_put_p(PART);
 		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
 		else lcd_put_p(FAT1);
+		
 		_delay_ms(1000);
-		SD_select_card();
+		//SD_select_card();
 	}
-	
+	SD_select_card();
 	buffClear();
 	SPI_fast();
+	return 1;
 }
 void init(char splash)
 {
@@ -428,7 +509,14 @@ void init(char splash)
 		lcd_gotoxy(3,4);
 		lcd_put_p(VERSION);
 		#endif
-		_delay_ms(1000);
+		#ifdef _OLED_
+		logo();		
+		lcd_gotoxy(13,5);
+		lcd_put_p(SPLASH1);
+		lcd_gotoxy(7,6);
+		lcd_put_p(VERSION);
+		#endif
+		_delay_ms(1500);
 	}
 }
 
@@ -438,7 +526,7 @@ void verify_status(void)
 	configButtons();
 	if (SD_ejected())
 	{
-		for (i = 0; i != 0x500; i++) if (!SD_ejected()) return;
+		for (i = 0; i != 0xFF; i++) if (!SD_ejected()) return;
 		TIMSK0 &= ~(1<<TOIE0);
 		EIMSK &= ~(1<<INT0);
 		inited = 0;
@@ -476,10 +564,10 @@ void verify_status(void)
 				while (down_is_pressed());  // enter button pushed !
 				cli();
 				#ifdef _LCD_
-				set_speed();
+					set_speed();
 				#endif
-				#ifdef _LCD_NOKIA_
-				setup();
+				#if defined(_LCD_NOKIA_) || defined(_OLED_)
+					setup();
 				#endif
 				if(SD_ejected()) return;
 				find_previous_nic();
@@ -513,19 +601,19 @@ void verify_status(void)
 	}
 	else if(!inited) // if not initialized
 	{
-		for (i = 0; i != 0x500; i++)  if (SD_ejected()) return;
+		for (i = 0; i != 0xFF; i++)  if (SD_ejected()) return;
 		cli();
-		init_sd(1);
-		find_previous_nic();
+		if(init_sd(1)) find_previous_nic();
 		if (inited)
 		{
+			
 			TIMSK0 |= (1<<TOIE0);
 			EIMSK |= (1<<INT0);
 		}
 		sei();
 	}
 }
-#ifdef _LCD_NOKIA_
+#if defined(_LCD_NOKIA_) || defined(_OLED_)
 void set_contrast()
 {
 	unsigned char contrast = 0XAF;
@@ -584,7 +672,12 @@ void set_contrast()
 			else
 			{
 				lcd_contrast = contrast;
-				lcd_config();
+				#ifdef _LCD_NOKIA_
+					lcd_config();
+				#endif
+				#ifdef _OLED_
+					ssd1306_contrast(lcd_contrast);
+				#endif
 			}
 		}
 		if(up_is_pressed())
@@ -597,7 +690,12 @@ void set_contrast()
 			else
 			{
 				lcd_contrast = contrast;
-				lcd_config();
+				#ifdef _LCD_NOKIA_
+					lcd_config();
+				#endif
+				#ifdef _OLED_
+					ssd1306_contrast(lcd_contrast);
+				#endif
 			}
 		}
 		if(enter_is_pressed())
@@ -607,7 +705,12 @@ void set_contrast()
 			if(contrast != original_contrast)
 			{
 				lcd_contrast = contrast;
-				lcd_config();
+				#ifdef _LCD_NOKIA_
+					lcd_config();
+				#endif
+				#ifdef _OLED_
+					ssd1306_contrast(lcd_contrast);
+				#endif
 				SD_select_card();
 				if(id_of_config_file!=-1)
 				{
@@ -635,20 +738,6 @@ void set_contrast()
 		}
 	}
 	return;
-}
-void icons(unsigned char i1, unsigned char i2, unsigned char i3)
-{
-	lcd_gotoxy(0,5);
-	lcd_overline();
-	lcd_put_p(EMP);
-	lcd_gotoxy(0,5);
-	lcd_icon(i1);
-	lcd_gotoxy(36,5);
-	lcd_icon(i2);
-	lcd_gotoxy(71,5);
-	lcd_icon(i3);
-	lcd_overline();
-	
 }
 void setup()
 {
@@ -715,28 +804,68 @@ void setup()
 	}
 	
 }
+void icons(unsigned char i1, unsigned char i2, unsigned char i3)
+{
+	#ifdef _LCD_NOKIA_
+	  #define IC_LINE 5
+	  #define IC_1 0
+	  #define IC_2 36
+	  #define IC_3 71
+	#endif
+	#ifdef _OLED_
+	  #define IC_LINE 6
+	  #define IC_1 0
+	  #define IC_2 58
+	  #define IC_3 115
+	#endif
+	lcd_gotoxy(IC_1,IC_LINE);
+	lcd_overline();
+	lcd_put_p(EMP);
+	lcd_gotoxy(IC_1,IC_LINE);
+	lcd_icon(i1);
+	lcd_gotoxy(IC_2,IC_LINE);
+	lcd_icon(i2);
+	lcd_gotoxy(IC_3,IC_LINE);
+	lcd_icon(i3);
+	lcd_overline();
+}
 #endif
 void set_speed()
-{
-	lcd_clear();
-	#ifdef _LCD_NOKIA_
-	lcd_gotoxy(0,0);
-	lcd_underline();
-	lcd_put_p(DLAY);
-	lcd_underline();
-	icons(4,5,3);
-	lcd_gotoxy(0,2);
-	lcd_put_p(VALUE);
-	#endif
-	
+{	
 	#ifdef _LCD_
-	lcd_gotoxy(0,0);
-	lcd_put_p(SPE1);
-	lcd_gotoxy(0,1);
-	lcd_put_p(SPE0);
+		lcd_clear();
+		lcd_gotoxy(0,0);
+		lcd_put_p(SPE1);
+		lcd_gotoxy(0,1);
+		lcd_put_p(SPE0);
+		lcd_put_i(SD_speed);
 	#endif
 	
-	lcd_put_i(SD_speed);
+	#ifdef _LCD_NOKIA_
+		lcd_clear();
+		lcd_gotoxy(0,0);
+		lcd_underline();
+		lcd_put_p(DLAY);
+		lcd_underline();
+		icons(4,5,3);
+		lcd_gotoxy(0,2);
+		lcd_put_p(VALUE);
+		lcd_put_i(SD_speed);
+	#endif
+	
+	#ifdef _OLED_
+		lcd_clear();
+		lcd_gotoxy(0,0);
+		lcd_underline();
+		lcd_put_p(DLAY);
+		lcd_underline();
+		icons(4,5,3);
+		lcd_gotoxy(0,3);
+		lcd_put_p(VALUE);
+		lcd_put_i(SD_speed);
+	#endif
+	
+	
 	unsigned char old_speed = SD_speed;
 	unsigned char original_speed = SD_speed;
 	while(1)
@@ -745,17 +874,19 @@ void set_speed()
 		if(SD_speed!=old_speed)
 		{
 			#ifdef _LCD_
-			lcd_gotoxy(0,1);
-			lcd_put_p(SPE0);
+				lcd_gotoxy(0,1);
+				lcd_put_p(SPE0);
 			#endif
 			#ifdef _LCD_NOKIA_
-			lcd_gotoxy(0,2);
-			lcd_put_p(VALUE);
+				lcd_gotoxy(0,2);
+				lcd_put_p(VALUE);
 			#endif
-			
+			#ifdef _OLED_
+				lcd_gotoxy(0,3);
+				lcd_put_p(VALUE);
+			#endif
 			lcd_put_i(SD_speed);
-			lcd_put_p(PSTR(" "));
-			
+			lcd_put_p(PSTR(" "));		
 			old_speed = SD_speed;
 		}
 		
@@ -820,23 +951,43 @@ void select_nic()
 	lastBlockRead = -1;
 	buffClear();
 	
-	#ifdef _LCD_NOKIA_
-	lcd_underline();
+	#ifdef _LCD_
+	  lcd_gotoxy(0,0);
+	  lcd_put_p(MSG7);
+	  lcd_gotoxy(0,1);
+	  lcd_put_p(MSGC);
 	#endif
-	lcd_gotoxy(0,0);
-	lcd_put_p(MSG7);
-	lcd_gotoxy(0,1);
+	
 	#ifdef _LCD_NOKIA_
-	lcd_underline();
-	icons(4,5,3);
-	for(i= 1;i<=4;i++)
-	{
-		lcd_gotoxy(0,i);
-		lcd_put_p(EMP);
-	}
-	lcd_gotoxy(0,2);
+	  lcd_underline();
+	  lcd_gotoxy(0,0);
+	  lcd_put_p(MSG7);
+	  lcd_gotoxy(0,1);
+	  lcd_underline();
+	  icons(4,5,3);
+	  for(i= 1;i<=4;i++)
+	  {
+		  lcd_gotoxy(0,i);
+		  lcd_put_p(EMP);
+	  }
+	  lcd_gotoxy(0,2);
+	  lcd_put_p(MSGC);
 	#endif
-	lcd_put_p(MSGC);
+	
+	#ifdef _OLED_
+	  lcd_underline();
+	  lcd_gotoxy(0,0);
+	  lcd_put_p(MSG7);
+	  lcd_underline();
+	  icons(4,5,3);
+	  for(i= 1;i<=5;i++)
+	  {
+		  lcd_gotoxy(0,i);
+		  lcd_put_p(EMP);
+	  }
+	  lcd_gotoxy(0,3);
+	  lcd_put_p(MSGC);
+	#endif
 	
 	i = 0;
 
@@ -855,20 +1006,28 @@ void select_nic()
 	if(nfiles == 0)
 	{
 		#ifdef _LCD_
-		lcd_gotoxy(0,1);
+		  lcd_gotoxy(0,1);
+		  lcd_put_p(MSG8);
 		#endif
 		#ifdef _LCD_NOKIA_
-		lcd_gotoxy(0,2);
+		  lcd_gotoxy(0,2);
+		  lcd_put_p(MSG8);
+		#endif		
+		#ifdef _OLED_
+		  lcd_gotoxy(0,3);
+		  lcd_put_p(MSG8);
 		#endif
-		lcd_put_p(MSG8);
 		return;
 	}
 	
 	#ifdef _LCD_
-	lcd_gotoxy(0,1);
+	  lcd_gotoxy(0,1);
 	#endif
 	#ifdef _LCD_NOKIA_
-	lcd_gotoxy(0,2);
+	  lcd_gotoxy(0,2);
+	#endif
+	#ifdef _OLED_
+	  lcd_gotoxy(0,3);
 	#endif
 	lcd_put_p(MSGD);
 	
@@ -937,18 +1096,24 @@ void select_nic()
 			index_old = index;
 			struct dir_Structure *file = getFile(files_id[index]);
 			#ifdef _LCD_
-			lcd_gotoxy(0,1);
-			if(is_a_dir(file)) lcd_put_s("[");
+			  lcd_gotoxy(0,1);
+			  if(is_a_dir(file)) lcd_put_s("[");
+			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+			  if(is_a_dir(file)) lcd_put_s("]");
+			  lcd_put_p(EMP);
 			#endif
 			#ifdef _LCD_NOKIA_
-			lcd_gotoxy(0,2);
-			if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
+			  lcd_gotoxy(0,2);
+			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
+			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+			  lcd_put_p(EMP);
 			#endif
-			for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
-			#ifdef _LCD_
-			if(is_a_dir(file)) lcd_put_s("]");
+			#ifdef _OLED_
+			  lcd_gotoxy(0,3);
+			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
+			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') ssd1306_char(file->name[i]);
+			  lcd_put_p(EMP);
 			#endif
-			lcd_put_p(EMP);
 		}
 	}
 	
@@ -987,13 +1152,20 @@ void find_previous_nic()
 				if(config->checksum==CHECKSUM_CONFIG)
 				{
 					SD_speed =config->sd_card_speed;
-					#ifdef _LCD_NOKIA_
-					lcd_contrast = config->lcd_contrast;
-					if(lcd_contrast > MAX_CONTRAST) lcd_contrast = MAX_CONTRAST;
-					if(lcd_contrast < MIN_CONTRAST) lcd_contrast = MIN_CONTRAST;
-					lcd_config();
-					SD_select_card();
+					 
+					#if  defined(_LCD_NOKIA_) || defined (_OLED_)
+					  lcd_contrast = config->lcd_contrast;
+					  if(lcd_contrast > MAX_CONTRAST) lcd_contrast = MAX_CONTRAST;
+					  if(lcd_contrast < MIN_CONTRAST) lcd_contrast = MIN_CONTRAST;
+					  #ifdef _LCD_NOKIA_
+					    lcd_config();	
+					  #endif
+					  #ifdef _OLED_
+					    ssd1306_contrast(lcd_contrast);
+					  #endif	
+					  SD_select_card();		
 					#endif
+					
 					
 					// set directory
 					FAT_sectorOfCurrentDirectory = config->directory_of_last_mounted_nic;
@@ -1115,29 +1287,44 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	if(!file) return 0;
 	
 	#ifdef _LCD_
-	lcd_gotoxy(0,0);
-	lcd_put_p(NIC);
-	for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
-	lcd_put_p(EMP);
-	lcd_gotoxy(0,1);
-	lcd_put_p(EMP);
-	lcd_gotoxy(0,1);
-	lcd_put_p(SPE0);
-	lcd_put_i(SD_speed);
+		lcd_gotoxy(0,0);
+		lcd_put_p(NIC);
+		for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+		lcd_put_p(EMP);
+		lcd_gotoxy(0,1);
+		lcd_put_p(EMP);
+		lcd_gotoxy(0,1);
+		lcd_put_p(SPE0);
+		lcd_put_i(SD_speed);
 	#endif
 	#ifdef _LCD_NOKIA_
-	lcd_clear();
-	lcd_gotoxy(0,0);
-	lcd_underline();
-	lcd_put_p(NIC);
-	lcd_gotoxy(53,0);
-	if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
-	else lcd_put_p(FAT1);
-	lcd_underline();
-	icons(0,1,2);
-	lcd_gotoxy(0,2);
-	lcd_icon(1);
-	for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+		lcd_clear();
+		lcd_gotoxy(0,0);
+		lcd_underline();
+		lcd_put_p(NIC);
+		lcd_gotoxy(53,0);
+		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
+		else lcd_put_p(FAT1);
+		lcd_underline();
+		icons(0,1,2);
+		lcd_gotoxy(0,2);
+		lcd_icon(1);
+		for(int i = 0;i<8;i++)  if(file->name[i]!=' ') lcd_char(file->name[i]);
+	#endif
+	
+	#ifdef _OLED_
+		lcd_clear();
+		lcd_gotoxy(0,0);
+		lcd_underline();
+		lcd_put_p(NIC);
+		lcd_gotoxy(6*(21-5),0);
+		if(FAT_partitionType==PARTITION_TYPE_FAT32) lcd_put_p(FAT3);
+		else lcd_put_p(FAT1);
+		lcd_underline();
+		icons(0,1,2);
+		lcd_gotoxy(0,2);
+		lcd_icon(1);
+		for(int i = 0;i<8;i++)  if(file->name[i]!=' ') ssd1306_char(file->name[i]);
 	#endif
 	
 	selected_file_id = file_id;
@@ -1218,7 +1405,6 @@ unsigned int mount_nic_image(int file_id, struct dir_Structure* file)
 	SD_sendCommand(SET_BLOCK_LEN, 512);
 	buffClear();
 	inited = 1;
-	
 
 	return 1;
 }
