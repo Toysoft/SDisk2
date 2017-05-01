@@ -55,6 +55,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
 #include "string.h"
 
 #ifdef _LCD_
@@ -76,8 +77,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define MAXNIC           4
 
 #define enter_is_pressed() bit_is_clear(ENTER_PORT,ENTER_BIT)
-#define down_is_pressed()  bit_is_clear(DOWN_PORT,DOWN_BIT)
-#define up_is_pressed()    bit_is_clear(UP_PORT,UP_BIT)
+#define down_is_pressed()  (bit_is_clear(DOWN_PORT,DOWN_BIT)*(flip_buttons==0) | bit_is_clear(UP_PORT,UP_BIT)*(flip_buttons==1))
+#define up_is_pressed()    (bit_is_clear(UP_PORT,UP_BIT)*(flip_buttons==0) | bit_is_clear(DOWN_PORT,DOWN_BIT)*(flip_buttons==1))
 #define diskII_disable()   bit_is_set(DISKII_PIN,DISKII_ENABLE)
 
 #define CHECKSUM_CONFIG 0X01AB02CD
@@ -115,13 +116,12 @@ void            cancelRead();
 void            buffClear();
 void            set_speed();
 void            configButtons();
+int             main(void);
 
 #if defined(_LCD_NOKIA_) || defined(_OLED_)
 void            set_contrast();
 void            setup();
 void            icons(unsigned char i1, unsigned char i2, unsigned char i3);
 #endif
-
-int             main(void);
 
 #endif

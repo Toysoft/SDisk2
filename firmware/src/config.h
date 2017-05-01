@@ -47,6 +47,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #define nop() __asm__ __volatile__ ("nop")
 #define clear_bit(a,z) (a &= ~_BV(z))
 #define set_bit(a,z) (a |= _BV(z))
+#define LCD_FLIP_ADD 0
 
 /*
 This is the original SDISK II version from Nishida that was updated

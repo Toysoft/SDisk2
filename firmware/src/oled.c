@@ -96,6 +96,7 @@ void ssd1306_init()
     ssd1306_inv = 0;
     ssd1306_under = 0;
     ssd1306_over = 0;
+	ssd1306_screenDown();
 }
 void ssd1306_clear()
 {

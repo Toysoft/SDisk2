@@ -41,6 +41,7 @@ unsigned char writeData[BUF_NUM][350];
 unsigned char sectors[BUF_NUM], tracks[BUF_NUM];
 unsigned char buffNum;
 unsigned char *writePtr;
+unsigned char flip_buttons;
 
 #define MAXFILES 200
 int *files_id;
@@ -157,6 +158,7 @@ PROGMEM const char SETUP[]    = " SETUP               ";
 PROGMEM const char EMP[]      = "                     ";
 PROGMEM const char SET1[]     = " Set SD delay        ";
 PROGMEM const char SET2[]     = " Set contrast        ";
+PROGMEM const char SET3[]     = " Rotate display      ";
 PROGMEM const char VALUE[]    = " Value: ";
 PROGMEM const char CONT[]     = " LCD CONTRAST        ";
 PROGMEM const char DLAY[]     = " SD SELECT DELAY     ";
@@ -489,10 +491,19 @@ void init(char splash)
 	buffNum = 0;
 	formatting = 0;
 	writePtr = &(writeData[buffNum][0]);
-	
+	flip_buttons =  eeprom_read_byte(LCD_FLIP_ADD);
+	if(flip_buttons !=0 && flip_buttons != 1)
+	{
+		flip_buttons = 0;
+		eeprom_write_byte (LCD_FLIP_ADD,0);
+	}
+		
 	if(splash)
 	{
 		lcd_init();
+		#ifdef _OLED_
+		  if(flip_buttons == 1) ssd1306_screenUp();
+		#endif
 		lcd_clear();
 		lcd_gotoxy(0,0);
 		#ifdef _LCD_
@@ -755,6 +766,17 @@ void setup()
 	lcd_inverse();
 	lcd_gotoxy(0,3);
 	lcd_put_p(SET2);
+	#ifdef _OLED_
+	lcd_gotoxy(0,4);
+	lcd_put_p(SET3);
+	#endif
+	
+	#ifdef _LCD_NOKIA_
+	  #define MAX_SET 2
+	#endif
+	#ifdef _OLED_
+	  #define MAX_SET 3
+	#endif
 	
 	while(1)
 	{
@@ -765,15 +787,25 @@ void setup()
 			_delay_ms(200);
 			
 			option++;
-			if(option>2) option = 2;
+			if(option>MAX_SET) option = MAX_SET;
 			else
 			{
+				if(option==1) lcd_inverse();
 				lcd_gotoxy(0,2);
 				lcd_put_p(SET1);
-				lcd_inverse();
+				if(option==1) lcd_inverse();
+				
+				if(option==2) lcd_inverse();
 				lcd_gotoxy(0,3);
 				lcd_put_p(SET2);
-				lcd_inverse();
+				if(option==2) lcd_inverse();
+				
+				#ifdef _OLED_
+				  if(option==3) lcd_inverse();
+				  lcd_gotoxy(0,4);
+				  lcd_put_p(SET3);
+				  if(option==3) lcd_inverse();
+				#endif
 			}
 		}
 		if(up_is_pressed())
@@ -785,12 +817,22 @@ void setup()
 			if(option<1) option = 1;
 			else
 			{
+				if(option==1) lcd_inverse();
 				lcd_gotoxy(0,2);
-				lcd_inverse();
 				lcd_put_p(SET1);
-				lcd_inverse();
+				if(option==1) lcd_inverse();
+				
+				if(option==2) lcd_inverse();
 				lcd_gotoxy(0,3);
 				lcd_put_p(SET2);
+				if(option==2) lcd_inverse();
+				
+				#ifdef _OLED_
+				  if(option==3) lcd_inverse();
+				  lcd_gotoxy(0,4);
+				  lcd_put_p(SET3);
+				  if(option==3) lcd_inverse();
+				#endif
 			}
 		}
 		if(enter_is_pressed())
@@ -799,6 +841,22 @@ void setup()
 			_delay_ms(200);
 			if(option == 1) set_speed();
 			if(option == 2) set_contrast();
+			#ifdef _OLED_
+			  if(option==3)
+			  {
+				  if(flip_buttons == 0) 
+				  {
+					  flip_buttons = 1;
+					  ssd1306_screenUp();
+				  }
+				  else 
+				  {
+					  flip_buttons = 0;
+					  ssd1306_screenDown();
+				  }
+				  eeprom_write_byte(LCD_FLIP_ADD,flip_buttons);
+			  }
+			#endif
 			return;
 		}
 	}
