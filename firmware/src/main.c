@@ -522,9 +522,9 @@ void init(char splash)
 		#endif
 		#ifdef _OLED_
 		logo();		
-		lcd_gotoxy(13,5);
+		lcd_gotoxy(13,6);
 		lcd_put_p(SPLASH1);
-		lcd_gotoxy(7,6);
+		lcd_gotoxy(7,7);
 		lcd_put_p(VERSION);
 		#endif
 		_delay_ms(1500);
@@ -871,7 +871,7 @@ void icons(unsigned char i1, unsigned char i2, unsigned char i3)
 	  #define IC_3 71
 	#endif
 	#ifdef _OLED_
-	  #define IC_LINE 6
+	  #define IC_LINE 7
 	  #define IC_1 0
 	  #define IC_2 58
 	  #define IC_3 115
