@@ -1,23 +1,56 @@
-SDISKII firmware
-================
+SDISKII 
+=======
 
 This package contains a new version of the firmware for the SDISKII with the LCD and 
 buttons to select the NIC image.
 
+Images are saved in the card in NIC format. You can convert DSK to NIC and NIC to DSK
+using the utility provided by Nishida in his webpage 
+
+     http://tulip-house.ddo.jp/digital/SDISK2/english.html
+     
+You can organize your images in subdirectories and you can nest them in as many levels
+as you want. In order to save your configuration and keep track of your last mounted
+NIC image and directory you need to have the SDISKII.CFG file saved in the top directory
+of your SD card. Please use the SDISKII.CFG file provided in this repository.
+
+FIRMWARE
+========
+
 The are 3 compiled versions of this firmware:
 
 1. sdisk2_original.hex
-  This is the original SDISK II with the 16 x 2 LCD done by Victor Trucco and Fábio
-  Belavenuto
+  
+  This is the original SDISK II with the 16 x 2 LCD done by Victor Trucco and Fabio
+  Belavenuto. See sdisk2_original.jpg for a picture of it as sold by Victor Trucco.
+  
+  Please note the three buttons in the botton of the sdisk2. They are used for selecting
+  the disk image and navigation as well as setup of the sdisk. 
+  
+  The schematics for this version can be found in the file sdisk2_original.pdf
 
 2. sdisk2_original_mod_nokia.hex
-  This is the original SDISK II hardware done by Victor Trucco and Fábio Belavenuto
+
+  Sometime ago I decided to replace the 16x2 LCD with a graphical Nokia 5110 LCD. I used
+  the same board sold by Victor, took out the original LCD and replaced it by the Nokia
+  LCD. I used some prototyping board to adapt the Nokia LCD to the original Sdisk. It is
+  not pretty but it works very well. See sdisk2_original_mod_nokia.jpg for a picture of it.
+  
+  This is the original SDISK II hardware done by Victor Trucco and Fabio Belavenuto
   with the mod done by Alexandre Suaide in order to replace the 16 x 2 LCD with
   the Nokia 5110 graphical display
+  
+  the schematics for this version is the same as for original just replacing the 16x2 LCD
+  in the original version by the Nokia 5110 display. The connections for this display
+  can be found in the file sdisk2_original_mod_nokia.pdf
 
-3. sdisk2_nokia.hex
+3. sdisk2_oled.hex
+
   This is for the second version of the SDISK II done by Victor Trucco already with the
-  Nokia 5110 graphical display and USB connection to update the firmware.
+  128 x 64 OLED graphical display and USB connection to update the firmware.
+  
+  Photo and schematics for this layout will be posted as soon as the first batch is made and
+  the firmware is well tested. It will come soon.
 
 Formatting the SD card
 ======================
