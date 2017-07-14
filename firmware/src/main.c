@@ -36,12 +36,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "main.h"
 
-#define BUF_NUM 5
+#define BUF_NUM 4  //originalmente era 5. testando por conta de um possivel overflow de memoria na sdisk nova com oled
 unsigned char writeData[BUF_NUM][350];
 unsigned char sectors[BUF_NUM], tracks[BUF_NUM];
 unsigned char buffNum;
 unsigned char *writePtr;
 unsigned char flip_buttons;
+
+#define DEBOUNCE 200
 
 #define MAXFILES 200
 int *files_id;
@@ -82,7 +84,7 @@ unsigned char  old_trk;
 
 /*                               1234567890123456 */
 #ifdef _LCD_
-PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.0";
+PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.1";
 PROGMEM const char SPLASH2[]  = "  Apple ][ BR   ";
 PROGMEM const char NIC[]      = "NIC: ";
 PROGMEM const char EMP[]      = "                ";
@@ -116,7 +118,7 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 /*                               12345678901234 */
 PROGMEM const char SPLASH1[]  = "SDisk ][";
 PROGMEM const char SPLASH2[]  = "Apple ][ - BR";
-PROGMEM const char VERSION[]  = "v. 5.0 (2017)";
+PROGMEM const char VERSION[]  = "v. 5.1 (2017)";
 PROGMEM const char NIC[]      = " NIC          ";
 PROGMEM const char SETUP[]    = " SETUP        ";
 PROGMEM const char EMP[]      = "              ";
@@ -152,7 +154,7 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 #ifdef _OLED_
 /*                               012345678901234567890*/  
 PROGMEM const char SPLASH1[]  = "SDISK ][ - BRASIL";
-PROGMEM const char VERSION[]  = "version 5.0 (2017)";
+PROGMEM const char VERSION[]  = "version 5.1 (2017)";
 PROGMEM const char NIC[]      = " NIC                 ";
 PROGMEM const char SETUP[]    = " SETUP               ";
 PROGMEM const char EMP[]      = "                     ";
@@ -1119,7 +1121,7 @@ void select_nic()
 		if(down_is_pressed())
 		{
 			while(down_is_pressed()){}
-			_delay_ms(200);
+			_delay_ms(DEBOUNCE);
 			
 			index++;
 			if(index==nfiles) index = 0;
@@ -1127,7 +1129,7 @@ void select_nic()
 		if(up_is_pressed())
 		{
 			while(up_is_pressed()){}
-			_delay_ms(200);
+			_delay_ms(DEBOUNCE);
 			
 			index--;
 			if(index<0) index = nfiles-1;
@@ -1135,6 +1137,7 @@ void select_nic()
 		if(enter_is_pressed())
 		{
 			while(enter_is_pressed()){}
+			_delay_ms(DEBOUNCE);
 			struct dir_Structure *file = getFile(files_id[index]);
 			if(is_a_dir(file))
 			{
