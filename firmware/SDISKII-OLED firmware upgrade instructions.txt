@@ -1,0 +1,42 @@
+Instructions for SDISK (OLED version) firmware update
+
+1. First, instal the AVRDUDE
+
+		for Windows
+		
+		  download the program from http://savannah.nongnu.org/projects/avrdude
+		  
+		  and install it
+		
+		for MacOSX do
+		  
+		  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
+	
+		  brew install avrdude
+		  
+		for Linux
+		
+		  check your distribution package manager software	
+		
+2. Install the Pandora LAB CH340 driver (only WINDOWS or MacOSX). Not needed for linux if
+   you are using a recent kernel
+
+		https://pandoralab.com.br/arduino/driver-ch340-para-arduino/
+		
+3. Upload the firmware using the command
+
+    	avrdude -C[config] -v -patmega328p -carduino -P[PORT] -b115200 -D -Uflash:w:[FIRMWARE]:i 
+    	
+    	where
+    	
+    	[config] is the avrdude config file (see avrdude.conf in this repository)
+    	
+    			for example, .\avrdude.conf
+    	
+    	[PORT] is the serial port attached to the SDISK II
+    			
+    			for example, in Windows, this could be PORT7
+    			
+    	[FIRMWARE] is the path to the firmware file
+    	
+    			for example, .\firmware\src\sdisk2_oled.hex 
