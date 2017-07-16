@@ -2,41 +2,57 @@ Instructions for SDISK (OLED version) firmware update
 
 1. First, instal the AVRDUDE
 
-		for Windows
+	for Windows
 		
-		  download the program from http://savannah.nongnu.org/projects/avrdude
+		download the program from http://savannah.nongnu.org/projects/avrdude
 		  
-		  and install it
+		and install it
 		
-		for MacOSX do
+	for MacOSX do
 		  
-		  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
+		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" < /dev/null 2> /dev/null
 	
-		  brew install avrdude
+		brew install avrdude
 		  
-		for Linux
+	for Linux
 		
 		  check your distribution package manager software	
 		
 2. Install the Pandora LAB CH340 driver (only WINDOWS or MacOSX). Not needed for linux if
    you are using a recent kernel
 
-		https://pandoralab.com.br/arduino/driver-ch340-para-arduino/
+	https://pandoralab.com.br/arduino/driver-ch340-para-arduino/
+
+	OBS: In the case os Mac OS X Sierra the driver provided by Pandora Lab crashes the kernel. There is an updated
+	driver with explanation at 
+
+	http://www.mblock.cc/docs/run-makeblock-ch340-ch341-on-mac-os-sierra/
 		
 3. Upload the firmware using the command
 
+	OBS: You need to remove the SD card from the slot in order to establish the proper connection from the computer to the SDISK ][
+
     	avrdude -C[config] -v -patmega328p -carduino -P[PORT] -b115200 -D -Uflash:w:[FIRMWARE]:i 
+
+	OBS: In some cases you need to leave a blank space between the flag and argument, for example
+			-patmega328p —> -p atmega328p
     	
-    	where
     	
-    	[config] is the avrdude config file (see avrdude.conf in this repository)
+	the arguments are:
+    	
+    		[config] is the avrdude config file (see avrdude.conf in this repository)
     	
     			for example, .\avrdude.conf
     	
-    	[PORT] is the serial port attached to the SDISK II
+    		[PORT] is the serial port attached to the SDISK II
     			
     			for example, in Windows, this could be PORT7
+ 			in my case, since I use MacOSX, I got /dev/cu.wchusbserial1420
     			
-    	[FIRMWARE] is the path to the firmware file
+    		[FIRMWARE] is the path to the firmware file
     	
     			for example, .\firmware\src\sdisk2_oled.hex 
+
+	A full example of the command line, in my computer, using MacOSX Sierra, is
+
+		avrdude -C ../avrdude.conf  -v -p atmega328p -c arduino -P /dev/cu.wchusbserial1420 -b 115200 -D -U flash:w:sdisk2_oled.hex:i
