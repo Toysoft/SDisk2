@@ -53,6 +53,8 @@ unsigned char res;
 unsigned char count;
 unsigned char shift;
 
+#define NFF 12
+
 unsigned char SD_init(void)
 {
 	
@@ -72,8 +74,7 @@ unsigned char SD_init(void)
 		for(i = 0; i < 100; ++i)  SPI_clock_pulse_slow();
 		SD_select_card();
 
-		SPI_transmit (0xff);
-		SPI_transmit (0xff);
+		for(i=0;i<NFF;i++) SPI_transmit (0xff);
 		
 		do
 		{
@@ -88,8 +89,7 @@ unsigned char SD_init(void)
 			}
 		} while (response != 0x01);
 		
-		SPI_transmit (0xff);
-		SPI_transmit (0xff);
+		for(i=0;i<NFF;i++) SPI_transmit (0xff);
 		
 		retry = 0;
 		 
@@ -120,8 +120,7 @@ unsigned char SD_init(void)
 			} //time out
 		} while (((response&0xFF) != 0xAA) && response != 0x01);
 
-		SPI_transmit (0xff);
-		SPI_transmit (0xff);
+		for(i=0;i<NFF;i++) SPI_transmit (0xff);
 		
 		retry = 0;
 		do

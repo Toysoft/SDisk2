@@ -84,7 +84,7 @@ unsigned char  old_trk;
 
 /*                               1234567890123456 */
 #ifdef _LCD_
-PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.1";
+PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.2";
 PROGMEM const char SPLASH2[]  = "  Apple ][ BR   ";
 PROGMEM const char NIC[]      = "NIC: ";
 PROGMEM const char EMP[]      = "                ";
@@ -118,7 +118,7 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 /*                               12345678901234 */
 PROGMEM const char SPLASH1[]  = "SDisk ][";
 PROGMEM const char SPLASH2[]  = "Apple ][ - BR";
-PROGMEM const char VERSION[]  = "v. 5.1 (2017)";
+PROGMEM const char VERSION[]  = "v. 5.2 (2017)";
 PROGMEM const char NIC[]      = " NIC          ";
 PROGMEM const char SETUP[]    = " SETUP        ";
 PROGMEM const char EMP[]      = "              ";
@@ -154,7 +154,7 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 #ifdef _OLED_
 /*                               012345678901234567890*/  
 PROGMEM const char SPLASH1[]  = "SDISK ][ - BRASIL";
-PROGMEM const char VERSION[]  = "version 5.1 (2017)";
+PROGMEM const char VERSION[]  = "version 5.2 (2017)";
 PROGMEM const char NIC[]      = " NIC                 ";
 PROGMEM const char SETUP[]    = " SETUP               ";
 PROGMEM const char EMP[]      = "                     ";
@@ -1181,13 +1181,14 @@ void select_nic()
 }
 void find_previous_nic()
 {
+	int i = 0;
 	buffer = &writeData[0][0];
 	//buffClear();
 	lastBlockRead = -1;
 	cd(0);
 	int firstNic = -1;
 	id_of_config_file = -1;
-	int i = 0;
+	
 	do
 	{
 		struct dir_Structure *file = getFile(i);
@@ -1253,7 +1254,18 @@ void find_previous_nic()
 		
 	} while (i<MAXFILES*2);
 	
-	if(firstNic==-1) inited = 0;
+	if(firstNic==-1) //inited = 0;
+	{	
+		cli();
+		select_nic();
+		if(SD_ejected()) return;
+		if (inited)
+		{
+			TIMSK0 |= (1<<TOIE0);
+			EIMSK |= (1<<INT0);
+		}
+		sei();
+	}
 	else
 	{
 		struct dir_Structure *file = getFile(firstNic);
