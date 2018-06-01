@@ -31,30 +31,6 @@ void  ssd1306_data(unsigned char c)
     i2c_stop();
 }
 
-void ssd1306_setColAddress(int x)
-{
-  ssd1306_command(SSD1306_COLUMNADDR); // 0x21 COMMAND
-  ssd1306_command(x); // Column start address
-  ssd1306_command(SSD1306_LCDWIDTH-1); // Column end address
-}
-void ssd1306_setPageAddress(int y)
-{
-  ssd1306_command(SSD1306_PAGEADDR); // 0x22 COMMAND
-  ssd1306_command(y); // Start Page address
-  ssd1306_command((SSD1306_LCDHEIGHT/8)-1);// End Page address
-}
-void ssd1306_transferBuffer(unsigned char* display_buffer, int siz)
-{ 
-      ssd1306_setColAddress(0);
-      ssd1306_setPageAddress(0);       
-      i2c_start((SSD1306_ADDRESS<<1) | I2C_WRITE);
-      i2c_write(0X40); 
-      for(int j=0;j<siz;j++)
-      {
-        i2c_write(display_buffer[j]);
-      }
-      i2c_stop();
-}
 
 void ssd1306_contrast(unsigned char value)
 {
@@ -66,20 +42,22 @@ void ssd1306_contrast(unsigned char value)
 void ssd1306_init()
 {
     i2c_init();
-    ssd1306_command(SSD1306_DISPLAYOFF);                    // 0xAE   
+    ssd1306_command(SSD1306_DISPLAYOFF);                    // 0xAE  
+	ssd1306_command(SSD1306_NORMALDISPLAY); 
     ssd1306_command(SSD1306_SETDISPLAYCLOCKDIV);            // 0xD5
     ssd1306_command(0x80);                                  // the suggested ratio 0x80   
-    ssd1306_command(SSD1306_SETMULTIPLEX);                  // 0xA8
-    ssd1306_command(0x3F); 
+    ssd1306_command(SSD1306_SETMULTIPLEX);                  // 0xA8    
+	ssd1306_command(0x3F); 
     ssd1306_command(SSD1306_SETDISPLAYOFFSET);              // 0xD3
     ssd1306_command(0x0);                                   // no offset  
-    ssd1306_command(SSD1306_SETSTARTLINE);// | 0x0);        // line #0   
+    ssd1306_command(SSD1306_SETSTARTLINE | 0x0);            // line #0   
     ssd1306_command(SSD1306_CHARGEPUMP);                    // 0x8D
     ssd1306_command(0x14);                                  // using internal VCC 
     ssd1306_command(SSD1306_MEMORYMODE);                    // 0x20
     ssd1306_command(0x00);                                  // 0x00 horizontal addressing  
-    ssd1306_command(SSD1306_SEGREMAP | 0x1);                // rotate screen 180 
+    ssd1306_command(SSD1306_SEGREMAP);                     // rotate screen 180 
     ssd1306_command(SSD1306_COMSCANDEC);                    // rotate screen 180  
+	
     ssd1306_command(SSD1306_SETCOMPINS);                    // 0xDA
     ssd1306_command(0x12);  
     ssd1306_command(SSD1306_SETCONTRAST);                   // 0x81
@@ -93,6 +71,7 @@ void ssd1306_init()
     ssd1306_command(SSD1306_DISPLAYON);                     //switch on OLED
     ssd1306_contr = 0xCF;
 	lcd_contrast = ssd1306_contr;
+	lcd_offset = 2;
     ssd1306_inv = 0;
     ssd1306_under = 0;
     ssd1306_over = 0;
@@ -100,11 +79,11 @@ void ssd1306_init()
 }
 void ssd1306_clear()
 {
-  ssd1306_setColAddress(0);
-  ssd1306_setPageAddress(0);       
-  i2c_start((SSD1306_ADDRESS<<1) | I2C_WRITE);
-  i2c_write(0X40); 
-  for(int j=0;j<1024;j++) i2c_write(0);
+  for(int line = 0 ; line<8; line++)
+  {
+	  lcd_gotoxy(0,line);
+	  for(int col = 0; col<132; col++) ssd1306_data(0);
+  }
   i2c_stop(); 
 }
 
@@ -158,8 +137,10 @@ void lcd_clear()
 }
 void lcd_gotoxy(unsigned char x, unsigned char y)
 {	
-	ssd1306_setPageAddress(y);
-	ssd1306_setColAddress(x);
+	ssd1306_command(0xB0+y); // Start Page address
+	unsigned char col = x/8;
+	ssd1306_command(lcd_offset+(8*col&0x0F));
+	ssd1306_command(0x10+((8*col>>4)&0x0F));
 }
 void lcd_put_s(char *str)
 {
@@ -201,7 +182,8 @@ void logo()
 {
 	for(int i = 0;i<5;i++)
 	{
-		lcd_gotoxy(25,0+i);
+		lcd_gotoxy(25,i);
+		
 		for(int j = 0; j<74; j++)
 		{
 			unsigned char D = (unsigned char)pgm_read_byte(&LOGO[i*74+j]);

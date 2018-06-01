@@ -111,6 +111,9 @@ uint8_t __attribute__ ((noinline)) i2c_read(unsigned char last) __attribute__ ((
 
 // If I2C_FASTMODE is set to 1, then the highest possible frequency below 400kHz
 // is selected. Be aware that not all slave chips may be able to deal with that!
+#define I2C_FASTMODE 1
+#define I2C_SLOWMODE 0
+
 #ifndef I2C_FASTMODE
 #define I2C_FASTMODE 1
 #endif

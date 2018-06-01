@@ -46,6 +46,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #ifndef __SDISK2__
 #define __SDISK2__
 
+
+#define VER "5.4"
+#define YEAR "(2018)"
+
 // these are done during compilation
 //#define _LCD_
 //#define _LCD_NOKIA_

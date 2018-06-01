@@ -2,6 +2,7 @@
 #define __OLED__
 
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 
 // I2C pins at ATMEGA
 #ifndef SDA_PIN
@@ -54,12 +55,10 @@
 #define MAX_CONTRAST 255
 
 unsigned char lcd_contrast;
+unsigned char lcd_offset;
 
 void ssd1306_command(int c);
 void ssd1306_data(unsigned char c);
-void ssd1306_setColAddress(int x);
-void ssd1306_setPageAddress(int y);
-void ssd1306_transferBuffer(unsigned char* display_buffer, int siz);
 void ssd1306_init();
 void ssd1306_clear();
 void ssd1306_char(unsigned char c);

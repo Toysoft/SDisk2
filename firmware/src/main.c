@@ -81,10 +81,9 @@ unsigned char  old_trk;
 5 - Cluster size smaller than minimum to keep buffer
 */
 
-
 /*                               1234567890123456 */
 #ifdef _LCD_
-PROGMEM const char SPLASH1[]  = "SDISK2 LCD v.5.2";
+PROGMEM const char SPLASH1[]  = "SDISK2 LCD v."VER;
 PROGMEM const char SPLASH2[]  = "  Apple ][ BR   ";
 PROGMEM const char NIC[]      = "NIC: ";
 PROGMEM const char EMP[]      = "                ";
@@ -118,7 +117,7 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 /*                               12345678901234 */
 PROGMEM const char SPLASH1[]  = "SDisk ][";
 PROGMEM const char SPLASH2[]  = "Apple ][ - BR";
-PROGMEM const char VERSION[]  = "v. 5.2 (2017)";
+PROGMEM const char VERSION[]  = "v. "VER" "YEAR;
 PROGMEM const char NIC[]      = " NIC          ";
 PROGMEM const char SETUP[]    = " SETUP        ";
 PROGMEM const char EMP[]      = "              ";
@@ -153,8 +152,8 @@ PROGMEM const char SDOUT[]    = "No SD inserted";
 
 #ifdef _OLED_
 /*                               012345678901234567890*/  
-PROGMEM const char SPLASH1[]  = "SDISK ][ - BRASIL";
-PROGMEM const char VERSION[]  = "version 5.2 (2017)";
+PROGMEM const char SPLASH1[]  = "  SDISK ][ - BRASIL";
+PROGMEM const char VERSION[]  = "  version "VER" "YEAR;
 PROGMEM const char NIC[]      = " NIC                 ";
 PROGMEM const char SETUP[]    = " SETUP               ";
 PROGMEM const char EMP[]      = "                     ";
@@ -1276,14 +1275,14 @@ void find_previous_nic()
 unsigned char is_a_nic(struct dir_Structure *file)
 {
 	if(!file) return 0;
-	if(file->name[0]== 0x00 || file->name[0]== 0xe5) return 0; //deleted or empty file
+	if(file->name[0]== 0x00 || file->name[0]== 0xE5 || file->name[0]== 0x5F) return 0; //deleted or empty file
 	if(file->name[8]=='N' && file->name[9]=='I'  && file->name[10]=='C') return 1;
 	return 0;
 }
 unsigned char is_a_dir(struct dir_Structure *file)
 {
 	if(!file) return 0;
-	if(file->name[0]== 0x00 || file->name[0]== 0xe5) return 0; //deleted or empty file
+	if(file->name[0]== 0x00 || file->name[0]== 0xE5 || file->name[0]== 0x5F) return 0; //deleted or empty file
 	if(file->attrib & 0x10) return 1;
 	return 0;
 }
