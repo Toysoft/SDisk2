@@ -1173,7 +1173,7 @@ void select_nic()
 			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
 			  unsigned char count = 0;
 			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') {ssd1306_char(file->name[i]); count++;}
-			  for(int i = count; i<16;i++) ssd1306_char(" ");
+			  for(int i = count; i<16;i++) ssd1306_char(' ');
 			#endif
 		}
 	}
