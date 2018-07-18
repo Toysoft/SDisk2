@@ -1171,8 +1171,9 @@ void select_nic()
 			#ifdef _OLED_
 			  lcd_gotoxy(0,3);
 			  if(is_a_dir(file)) lcd_icon(6); else lcd_icon(1);
-			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') ssd1306_char(file->name[i]);
-			  lcd_put_p(EMP);
+			  unsigned char count = 0;
+			  for(int i = 0;i<8;i++)  if(file->name[i]!=' ') {ssd1306_char(file->name[i]); count++;}
+			  for(int i = count; i<16;i++) ssd1306_char(" ");
 			#endif
 		}
 	}
